@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuBaNaTu 2026 Soundboard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: #5c44e4;
+            min-height: 100vh;
+        }
+
+        body.auth-checking .soundboard-area {
+            display: none;
+        }
+
+        .access-denied {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            box-sizing: border-box;
+            color: white;
+            font-family: 'FranklinLight', Arial, sans-serif;
+            text-align: center;
+        }
+
+        .access-denied-box {
+            width: min(420px, 100%);
+            background: white;
+            color: #3414fc;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.2);
+        }
+
+        .soundboard-area {
+            min-height: 100vh;
+            padding: 28px 14px 38px;
+            box-sizing: border-box;
+        }
+
+        .soundboard-shell {
+            width: min(980px, 100%);
+            margin: 0 auto;
+        }
+
+        .soundboard-top {
+            display: grid;
+            gap: 12px;
+            margin: 18px auto 18px;
+            max-width: 720px;
+        }
+
+        .soundboard-control {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            padding: 6px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.16);
+        }
+
+        .soundboard-control.gender-control {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            max-width: 240px;
+            margin: 0 auto;
+        }
+
+        .soundboard-control.age-control {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .soundboard-choice {
+            border: none;
+            border-radius: 7px;
+            padding: 10px 8px;
+            background: rgba(255,255,255,0.88);
+            color: #3414fc;
+            font-family: 'FranklinLight', Arial, sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .soundboard-choice.active {
+            background: #3414fc;
+            color: white;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+        }
+
+        .soundboard-panel {
+            display: none;
+            background: white;
+            color: black;
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+        }
+
+        .soundboard-panel.active {
+            display: block;
+        }
+
+        .soundboard-panel h3 {
+            margin: 0 0 12px;
+            color: #3414fc;
+            font-size: 18px;
+        }
+
+        .sound-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .sound-button {
+            min-height: 58px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'FranklinLight', Arial, sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.14);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.08s, filter 0.08s;
+        }
+
+        .sound-button.gender-m {
+            background: #1f6fe5;
+        }
+
+        .sound-button.gender-w {
+            background: #e6428a;
+        }
+
+        .sound-button:active {
+            transform: translateY(1px);
+        }
+
+        .global-sound-button {
+            background: #5c44e4;
+        }
+
+        .sound-button.playing {
+            outline: 3px solid rgba(255,255,255,0.9);
+            outline-offset: -5px;
+            filter: brightness(1.08);
+        }
+
+        .soundboard-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 18px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Context menu */
+        .ctx-menu {
+            position: fixed;
+            z-index: 1000;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+            padding: 6px 0;
+            min-width: 160px;
+            animation: ctxFadeIn 0.12s ease;
+        }
+
+        @keyframes ctxFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .ctx-menu-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #888;
+            padding: 4px 14px 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .ctx-menu-item {
+            display: block;
+            width: 100%;
+            border: none;
+            background: none;
+            text-align: left;
+            padding: 9px 14px;
+            font-family: 'FranklinLight', Arial, sans-serif;
+            font-size: 15px;
+            color: #222;
+            cursor: pointer;
+        }
+
+        .ctx-menu-item:hover {
+            background: #f0eeff;
+            color: #3414fc;
+        }
+
+        .ctx-menu-item.active-choice {
+            color: #3414fc;
+            font-weight: bold;
+        }
+
+        .ctx-menu-item.empty-choice {
+            color: #999;
+            font-style: italic;
+        }
+
+        .ctx-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+        }
+
+
+
+        @media (max-width: 700px) {
+            h1 {
+                font-size: 27px;
+            }
+
+            .soundboard-area {
+                padding: 18px 10px 32px;
+            }
+
+            .soundboard-top {
+                gap: 10px;
+                margin: 12px auto 14px;
+            }
+
+            .soundboard-control.gender-control {
+                max-width: 100%;
+            }
+
+            .soundboard-control.age-control {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .soundboard-choice {
+                padding: 12px 8px;
+                font-size: 14px;
+            }
+
+            .soundboard-panel,
+            .soundboard-global {
+                padding: 12px;
+            }
+
+            .sound-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .sound-button {
+                min-height: 56px;
+                font-size: 13px;
+            }
+        }
+
+        /* Tablet landscape & small desktop */
+        @media (min-width: 701px) and (max-width: 1024px) {
+            .soundboard-shell {
+                width: min(700px, 100%);
+            }
+
+            .sound-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 420px) {
+            .sound-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 7px;
+            }
+
+            .sound-button {
+                min-height: 60px;
+                font-size: 13px;
+            }
+
+            .soundboard-control.gender-control {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="auth-checking">
+    <main class="soundboard-area">
+        <div class="soundboard-shell">
+            <h1 class="site-title">FuBaNaTu 2026</h1>
+            <h2 class="subtitle">Soundboard</h2>
+
+            <div class="soundboard-top" aria-label="Soundboard Auswahl">
+                <div class="soundboard-control gender-control" aria-label="Geschlecht auswählen">
+                    <button class="soundboard-choice active" type="button" data-gender-option="m">m</button>
+                    <button class="soundboard-choice" type="button" data-gender-option="w">w</button>
+                </div>
+
+                <div class="soundboard-control age-control" aria-label="Altersstufe auswählen">
+                    <button class="soundboard-choice active" type="button" data-age="56">5/6</button>
+                    <button class="soundboard-choice" type="button" data-age="78">7/8</button>
+                    <button class="soundboard-choice" type="button" data-age="910">9/10</button>
+                    <button class="soundboard-choice" type="button" data-age="haupt">Hauptturnier</button>
+                </div>
+            </div>
+
+            <div id="soundboardPanels"></div>
+
+            <div class="soundboard-global" style="margin-top: 14px; background: white; color: black; border-radius: 12px; padding: 14px; box-shadow: 0 10px 28px rgba(0,0,0,0.18);">
+                <h3>Allgemein</h3>
+                <div class="sound-grid">
+                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-1">Platzhalter 1</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-2">Platzhalter 2</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-3">Platzhalter 3</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-4">Platzhalter 4</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-5">Platzhalter 5</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-6">Platzhalter 6</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-7">Platzhalter 7</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-8">Platzhalter 8</button>
+                </div>
+            </div>
+
+            <a class="soundboard-back" href="index.html">Zurück zur Turnierseite</a>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbviwxqQ-SITuT-5MiqanxKGLM11oPULA",
+            authDomain: "fubanatu-2026.firebaseapp.com",
+            databaseURL: "https://fubanatu-2026-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "fubanatu-2026",
+            storageBucket: "fubanatu-2026.firebasestorage.app",
+            messagingSenderId: "350065123550",
+            appId: "1:350065123550:web:f2f7b412f9dadc4b4ee24f"
+        };
+        const ADMIN_EMAIL = "admin@fubanatu2026.de";
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Which buttons are "Sieger"-buttons and what options they get
+        // key: "age_gender_label" → options list
+        const SIEGER_CONFIGS = {
+            "910_m_Sieger 7/8":    { options: ["7a","7b","7c","7d","8a","8b","8c","8d"] },
+            "910_w_Sieger 7/8":    { options: ["7a","7b","7c","7d","8a","8b","8c","8d"] },
+            "haupt_m_Sieger 9/10": { options: ["9a","9b","9c","9d","10a","10b","10c","Sieger 7/8"] },
+            "haupt_w_Sieger 9/10": { options: ["9a","9b","9c","9d","10a","10b","10c","Sieger 7/8"] },
+        };
+
+        // Current sieger mappings loaded from Firebase: { "910_m_Sieger 7/8": "7c", ... }
+        const siegerMap = {};
+
+        // Firebase key-safe version of sieger config key
+        function safeKey(k) { return k.replace(/[.#$[\]/]/g, "_").replace(/ /g, "-"); }
+
+        // Save a sieger mapping to Firebase
+        function saveSieger(configKey, choice) {
+            set(ref(db, `soundboard/sieger/${safeKey(configKey)}`), choice || null);
+        }
+
+        function updateSiegerButton(btn, val) {
+            const base = btn.dataset.sound;
+            btn.textContent = val ? val : base;
+            btn.style.whiteSpace = "";
+            btn.style.lineHeight = "";
+            btn.style.fontSize   = "";
+        }
+
+        // Listen for sieger changes from Firebase and update buttons
+        function listenSieger() {
+            onValue(ref(db, "soundboard/sieger"), (snap) => {
+                const data = snap.val() || {};
+                Object.keys(SIEGER_CONFIGS).forEach(configKey => {
+                    const val = data[safeKey(configKey)] || null;
+                    siegerMap[configKey] = val;
+                    document.querySelectorAll(`[data-sieger-key="${configKey}"]`).forEach(btn => {
+                        updateSiegerButton(btn, val);
+                    });
+                });
+            });
+        }
+
+        const ages = [
+            { id: "56", label: "5/6" },
+            { id: "78", label: "7/8" },
+            { id: "910", label: "9/10" },
+            { id: "haupt", label: "Hauptturnier" }
+        ];
+        const genders = [
+            { id: "m", label: "m" },
+            { id: "w", label: "w" }
+        ];
+        const soundLabels = {
+            "56": ["5a", "5b", "5c", "5d", "6a", "6b", "6c", "6d"],
+            "78": ["7a", "7b", "7c", "7d", "8a", "8b", "8c", "8d"],
+            "910": ["9a", "9b", "9c", "9d", "10a", "10b", "10c", "Sieger 7/8"],
+            "haupt": ["EF 1", "EF 2", "Q1 1", "Q1 2", "Q1 3", "Lehrkräfte", "Ehemalige 1", "Ehemalige 2", "Ehemalige 3", "Sieger 9/10"]
+        };
+        let selectedGender = "m";
+        let selectedAge = "56";
+        let currentAudio = null;
+        let currentButton = null;
+
+        const panels = document.getElementById("soundboardPanels");
+
+        genders.forEach(gender => {
+            ages.forEach(age => {
+                const labels = soundLabels[age.id] || [];
+                const panel = document.createElement("section");
+                panel.className = "soundboard-panel";
+                panel.dataset.gender = gender.id;
+                panel.dataset.age = age.id;
+                panel.innerHTML = `
+                    <h3>${gender.label} - ${age.label}</h3>
+                    <div class="sound-grid">
+                        ${labels.map(label => {
+                            const configKey = `${age.id}_${gender.id}_${label}`;
+                            const isSieger = configKey in SIEGER_CONFIGS;
+                            return `<button class="sound-button gender-${gender.id}" type="button"
+                                data-sound="${label}"
+                                ${isSieger ? `data-sieger-key="${configKey}"` : ""}
+                            >${label}</button>`;
+                        }).join("")}
+                    </div>
+                `;
+                panels.appendChild(panel);
+            });
+        });
+
+        function labelToFilename(label) {
+            return label.replace(/ /g, "-").replace(/\//g, "-");
+        }
+
+        function resolveSieger(label, gender) {
+            // Resolve up to 2 levels of sieger mapping
+            let resolved = label;
+            for (let i = 0; i < 2; i++) {
+                // Find a matching sieger config key for current resolved label + gender
+                const matchKey = Object.keys(SIEGER_CONFIGS).find(k => {
+                    const parts = k.split("_"); // e.g. ["910","m","Sieger 7/8"]
+                    const keyGender = parts[1];
+                    const keyLabel = parts.slice(2).join("_").replace(/-/g, " ");
+                    return keyGender === gender && keyLabel === resolved;
+                });
+                if (matchKey && siegerMap[matchKey]) {
+                    resolved = siegerMap[matchKey];
+                } else {
+                    break;
+                }
+            }
+            return resolved;
+        }
+
+        function playSound(label, button) {
+            const configKey = button.dataset.siegerKey;
+            let resolvedLabel = label;
+            if (configKey && siegerMap[configKey]) {
+                resolvedLabel = siegerMap[configKey];
+            }
+            // Chain: if resolved is itself a sieger (e.g. "Sieger 7/8"), resolve again
+            resolvedLabel = resolveSieger(resolvedLabel, selectedGender);
+
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            if (currentButton) currentButton.classList.remove("playing");
+
+            currentButton = button;
+            currentButton.classList.add("playing");
+            const filename = `sounds/${labelToFilename(resolvedLabel)}_${selectedGender}.mp3`;
+            currentAudio = new Audio(encodeURI(filename));
+            currentAudio.addEventListener("ended", () => button.classList.remove("playing"));
+            currentAudio.play().catch(() => button.classList.remove("playing"));
+        }
+
+        // --- Context menu ---
+        let ctxMenu = null;
+        let ctxOverlay = null;
+        let longPressTimer = null;
+
+        function closeCtxMenu() {
+            if (ctxMenu)    { ctxMenu.remove();    ctxMenu = null; }
+            if (ctxOverlay) { ctxOverlay.remove(); ctxOverlay = null; }
+        }
+
+        function openCtxMenu(button, x, y) {
+            closeCtxMenu();
+            const configKey = button.dataset.siegerKey;
+            const config = SIEGER_CONFIGS[configKey];
+            if (!config) return;
+
+            const current = siegerMap[configKey] || null;
+
+            ctxOverlay = document.createElement("div");
+            ctxOverlay.className = "ctx-overlay";
+            ctxOverlay.addEventListener("click", closeCtxMenu);
+            document.body.appendChild(ctxOverlay);
+
+            const menu = document.createElement("div");
+            menu.className = "ctx-menu";
+
+            const title = document.createElement("div");
+            title.className = "ctx-menu-title";
+            title.textContent = button.dataset.sound + " zuordnen";
+            menu.appendChild(title);
+
+            const emptyItem = document.createElement("button");
+            emptyItem.className = "ctx-menu-item empty-choice" + (current === null ? " active-choice" : "");
+            emptyItem.textContent = "— Leer (kein Song) —";
+            emptyItem.addEventListener("click", () => { saveSieger(configKey, null); closeCtxMenu(); });
+            menu.appendChild(emptyItem);
+
+            config.options.forEach(opt => {
+                const item = document.createElement("button");
+                item.className = "ctx-menu-item" + (opt === current ? " active-choice" : "");
+                item.textContent = opt;
+                item.addEventListener("click", () => { saveSieger(configKey, opt); closeCtxMenu(); });
+                menu.appendChild(item);
+            });
+
+            document.body.appendChild(menu);
+            ctxMenu = menu;
+
+            // Position menu, keep inside viewport
+            const mw = 180, mh = menu.offsetHeight || 300;
+            let left = x, top = y;
+            if (left + mw > window.innerWidth)  left = window.innerWidth - mw - 8;
+            if (top  + mh > window.innerHeight) top  = window.innerHeight - mh - 8;
+            menu.style.left = left + "px";
+            menu.style.top  = top  + "px";
+        }
+
+        function attachSiegerMenu(button) {
+            // Right-click (desktop)
+            button.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                openCtxMenu(button, e.clientX, e.clientY);
+            });
+
+            // Long-press (mobile)
+            button.addEventListener("pointerdown", (e) => {
+                longPressTimer = setTimeout(() => {
+                    const rect = button.getBoundingClientRect();
+                    openCtxMenu(button, rect.left, rect.bottom + 4);
+                }, 500);
+            });
+            button.addEventListener("pointerup",    () => clearTimeout(longPressTimer));
+            button.addEventListener("pointercancel",() => clearTimeout(longPressTimer));
+            button.addEventListener("pointermove",  () => clearTimeout(longPressTimer));
+        }
+
+        document.querySelectorAll(".sound-button").forEach(button => {
+            button.addEventListener("click", () => {
+                if (currentButton === button && currentAudio && !currentAudio.paused) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                    button.classList.remove("playing");
+                    currentButton = null;
+                    return;
+                }
+                playSound(button.dataset.sound, button);
+            });
+
+            if (button.dataset.siegerKey) {
+                attachSiegerMenu(button);
+            }
+        });
+
+        document.querySelectorAll(".global-sound-button").forEach(button => {
+            button.addEventListener("click", () => {
+                if (currentButton === button && currentAudio && !currentAudio.paused) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                    button.classList.remove("playing");
+                    currentButton = null;
+                    return;
+                }
+                // Global sounds: no gender suffix, just sounds/<name>.mp3
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+                if (currentButton) currentButton.classList.remove("playing");
+                currentButton = button;
+                currentButton.classList.add("playing");
+                const filename = `sounds/${labelToFilename(button.dataset.sound)}.mp3`;
+                currentAudio = new Audio(encodeURI(filename));
+                currentAudio.addEventListener("ended", () => button.classList.remove("playing"));
+                currentAudio.play().catch(() => button.classList.remove("playing"));
+            });
+        });
+
+        function updateSoundboard() {
+            document.querySelectorAll(".soundboard-panel").forEach(panel => {
+                panel.classList.toggle(
+                    "active",
+                    panel.dataset.gender === selectedGender && panel.dataset.age === selectedAge
+                );
+            });
+
+            document.querySelectorAll(".soundboard-choice[data-gender-option]").forEach(button => {
+                button.classList.toggle("active", button.dataset.genderOption === selectedGender);
+            });
+
+            document.querySelectorAll(".soundboard-choice[data-age]").forEach(button => {
+                button.classList.toggle("active", button.dataset.age === selectedAge);
+            });
+        }
+
+        document.querySelectorAll(".soundboard-choice[data-gender-option]").forEach(button => {
+            button.addEventListener("click", () => {
+                selectedGender = button.dataset.genderOption;
+                updateSoundboard();
+            });
+        });
+
+        document.querySelectorAll(".soundboard-choice[data-age]").forEach(button => {
+            button.addEventListener("click", () => {
+                selectedAge = button.dataset.age;
+                updateSoundboard();
+            });
+        });
+
+        function denyAccess() {
+            document.body.classList.remove("auth-checking");
+            document.body.innerHTML = `
+                <div class="access-denied">
+                    <div class="access-denied-box">
+                        <h1>Zugriff verweigert</h1>
+                        <p>Bitte zuerst im Admin-Menü der Turnierseite anmelden.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user || user.email !== ADMIN_EMAIL) {
+                denyAccess();
+                return;
+            }
+
+            document.body.classList.remove("auth-checking");
+            listenSieger();
+            updateSoundboard();
+        });
+    </script>
+</body>
+</html>

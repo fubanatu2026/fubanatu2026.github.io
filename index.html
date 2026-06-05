@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuBaNaTu 2026</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+</head>
+
+<body>
+
+<div id="turnierCountdown" class="countdown-box">
+    <span id="countdownText">Lädt...</span>
+</div>
+
+<div id="popupOverlay" class="popup-overlay"></div>
+<div id="adminOverlay" class="admin-overlay"></div>
+
+<div class="main-area">
+    <h1 class="site-title">
+        <span>FuBaNaTu 2026 <span id="adminBall" class="ball-icon">⚽</span></span>
+        <button id="shareBtn" class="title-icon-button" type="button" aria-label="Website teilen" title="Website teilen">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+        </button>
+    </h1>
+    <h2 class="subtitle">Dienstag 14. Juli 2026 – Mittwoch 15. Juli 2026</h2>
+
+    <div id="adminPasswordBox" class="admin-box">
+        <div class="admin-title">Nur für Admins</div>
+        <input type="password" id="adminPassword" placeholder="Passwort eingeben">
+    </div>
+
+    <div id="adminPanel">
+    <button class="admin-close" id="closeAdminPanelBtn" type="button">&times;</button>
+    <h3>Admin-Konsole</h3>
+    
+    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <p>Ergebnisse für Spiel <span id="adminCurrentNr">0</span>:</p>
+        
+        <div id="adminResultUnavailable" class="admin-result-unavailable" style="display: none;">Bei Pause oder ohne aktuelles Spiel kann kein Ergebnis eingetragen werden.</div>
+
+        <div id="adminResultRowA" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;">
+            <span id="adminGameALabel">Platz 1</span>
+            <input type="number" id="resA1" placeholder="0" inputmode="numeric" min="0" style="width: 40px;"> : 
+            <input type="number" id="resA2" placeholder="0" inputmode="numeric" min="0" style="width: 40px;">
+        </div>
+        
+        <div id="adminResultRowB" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+            <span id="adminGameBLabel">Platz 2</span>
+            <input type="number" id="resB1" placeholder="0" inputmode="numeric" min="0" style="width: 40px;"> : 
+            <input type="number" id="resB2" placeholder="0" inputmode="numeric" min="0" style="width: 40px;">
+        </div>
+        
+        <div class="admin-actions">
+            <button class="admin-button admin-button-success" id="saveResultsBtn">Speichern & nächstes Spiel</button>
+            <button class="admin-button admin-button-success" id="savePauseBtn">Speichern & Pause</button>
+            <button class="admin-button admin-button-success" id="resumeNextGameBtn" style="display: none;">Nächstes Spiel</button>
+            <button class="admin-button admin-button-warning" id="deleteSingleResultBtn">Ergebnis löschen</button>
+            <button class="admin-button admin-button-danger" id="resetResultsBtn">Alle Ergebnisse löschen</button>
+            <button class="admin-button admin-button-secondary" id="logoutAdminBtn">Abmelden</button>
+        </div>
+    </div>
+
+    <div id="adminMessage" class="admin-message"></div>
+
+    <h4>Spiel auswählen (ohne Speichern):</h4>
+    <button class="admin-button admin-button-secondary" id="selectGameBtn">Spiel per Eingabe auswählen</button>
+    <a class="admin-button admin-button-secondary" id="soundboardAdminBtn" href="soundboard.html" target="_blank" rel="noopener">Soundboard</a>
+</div>
+
+    <div id="pastWrapper" class="games-wrapper">
+        <div class="games-header">Vergangene Spiele</div>
+        <button id="pastMoreBtn" class="show-more">Mehr anzeigen</button>
+        <div id="pastGames"></div>
+    </div>
+
+    <div id="liveSpiel" class="live-box">
+    <div class="live-content-wrapper">
+        <div id="liveText">
+            Live-Daten werden geladen...
+            </div>
+    </div>
+</div>
+
+    <div id="futureWrapper" class="games-wrapper">
+        <div class="games-header">Kommende Spiele</div>
+        <div id="futureGames"></div>
+        <button id="futureMoreBtn" class="show-more">Mehr anzeigen</button>
+    </div>
+
+    <div class="notice">
+        <span class="notice-arrow">&dArr;</span>
+        <span class="notice-text">Detaillierte Spielpläne & aktuelle Tabellen</span>
+        <span class="notice-arrow">&dArr;</span>
+    </div>
+
+    <div class="grid tournament-grid">
+        <div class="card tournament-card">
+            <div class="card-header">Stufe 5 & 6</div>
+            <div class="card-body tournament-links">
+                <a href="https://tournifyapp.com/live/fubanatu2026-stufe-5-6-maennlich" target="_blank">männlich öffnen</a>
+                <a href="LINK2" target="_blank">weiblich öffnen</a>
+            </div>
+        </div>
+        <div class="card tournament-card">
+            <div class="card-header">Stufe 7 & 8</div>
+            <div class="card-body tournament-links">
+                <a href="LINK3" target="_blank">männlich öffnen</a>
+                <a href="LINK4" target="_blank">weiblich öffnen</a>
+            </div>
+        </div>
+        <div class="card tournament-card">
+            <div class="card-header">Stufe 9 & 10</div>
+            <div class="card-body tournament-links">
+                <a href="LINK5" target="_blank">männlich öffnen</a>
+                <a href="LINK6" target="_blank">weiblich öffnen</a>
+            </div>
+        </div>
+        <div class="card tournament-card">
+            <div class="card-header">EF / Q1 / Lehrer / Ehemalige</div>
+            <div class="card-body tournament-links">
+                <a href="LINK7" target="_blank">männlich öffnen</a>
+                <a href="LINK8" target="_blank">weiblich öffnen</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="visitor-box">
+        <span class="visitor-text">
+            <script charset="UTF-8" src="https://www.onlex.de/_counter.php?username=Gino1502"></script>
+            &nbsp;Seitenaufrufe
+        </span>
+    </div>
+</div>
+
+<div id="shareOverlay" class="share-overlay"></div>
+<div id="sharePopup" class="share-popup">
+    <button class="share-close" id="closeShareBtn" type="button">&times;</button>
+    <h3>Website teilen</h3>
+    <img src="qr-code.png" alt="QR-Code zur FuBaNaTu Website" class="share-qr">
+    <p class="share-url">fubanatu2026.github.io</p>
+    <div class="share-actions">
+        <button id="copyLinkBtn" type="button">Link kopieren</button>
+        <button id="nativeShareBtn" type="button">Teilen</button>
+        <a href="https://wa.me/?text=https%3A%2F%2Ffubanatu2026.github.io" target="_blank">WhatsApp</a>
+    </div>
+    <div id="shareMessage" class="share-message"></div>
+</div>
+
+<footer class="footer">
+    <p class="footer-title">Gymnasium der Stadt Würselen</p>
+    <p>Kontakt: <a href="mailto:abi2027-gymwue@outlook.de">abi2027-gymwue@outlook.de</a></p>
+    <p>Website: <a href="https://www.gymnasium-wuerselen.de" target="_blank">www.gymnasium-wuerselen.de</a></p>
+    <p class="footer-copy"><span class="copy-symbol">&copy;</span> 2026 Gymnasium der Stadt Würselen – FuBaNaTu Orga‑Team</p>
+</footer>
+
+<div id="meinPopup" class="popup-fuba">
+    <div class="popup-header">
+        <span class="popup-title">WERBUNG</span>
+        <span class="popup-timer" id="popupTimer">5</span>
+    </div>
+    <div class="popup-body">
+        <div class="sponsor-thanks">Vielen Dank an unsere Sponsoren!</div>
+        <div class="ad-grid" aria-label="Werbeanzeigen">
+            <div class="ad-slot" data-label="Anzeige 1"><img class="ad-image" src="anzeige-1.png" alt="Anzeige 1" onerror="this.style.display='none'"></div>
+            <div class="ad-slot" data-label="Anzeige 2"><img class="ad-image" src="anzeige-2.png" alt="Anzeige 2" onerror="this.style.display='none'"></div>
+            <div class="ad-slot" data-label="Anzeige 3"><img class="ad-image" src="anzeige-3.png" alt="Anzeige 3" onerror="this.style.display='none'"></div>
+            <div class="ad-slot" data-label="Anzeige 4"><img class="ad-image" src="anzeige-4.png" alt="Anzeige 4" onerror="this.style.display='none'"></div>
+            <div class="ad-slot" data-label="Anzeige 5"><img class="ad-image" src="anzeige-5.png" alt="Anzeige 5" onerror="this.style.display='none'"></div>
+            <div class="ad-slot" data-label="Anzeige 6"><img class="ad-image" src="anzeige-6.png" alt="Anzeige 6" onerror="this.style.display='none'"></div>
+            <div class="ad-slot" data-label="Anzeige 7"><img class="ad-image" src="anzeige-7.png" alt="Anzeige 7" onerror="this.style.display='none'"></div>
+            <div class="ad-slot" data-label="Anzeige 8"><img class="ad-image" src="anzeige-8.png" alt="Anzeige 8" onerror="this.style.display='none'"></div>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="script.js"></script>
+
+</body>
+</html>
