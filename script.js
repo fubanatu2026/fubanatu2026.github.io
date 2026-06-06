@@ -50,6 +50,8 @@ let adminSignedIn = false;
 let liveDataLoaded = false;
 let spieleDataLoaded = false;
 let updateToastTimeout = null;
+let spielstandData = null;   // { remainingMs, running, updatedAt } aus Firebase
+let serverTimeOffset = 0;    // Differenz Client- zu Serverzeit (ms)
 
 const liveTableLinks = {
     "1_m": "LINK_INTERVAL_1_M", // Spiele 1-25, maennlich
@@ -590,6 +592,17 @@ onValue(ref(db, "pauseAnkerSpiel"), (snapshot) => {
     renderCurrentFirebaseState();
 });
 
+// Serverzeit-Offset für präzise Countdown-Berechnung
+onValue(ref(db, ".info/serverTimeOffset"), (snapshot) => {
+    serverTimeOffset = snapshot.val() || 0;
+});
+
+// Spielstand-Listener: remainingMs + running + updatedAt
+onValue(ref(db, "soundboard/spielstand"), (snapshot) => {
+    spielstandData = snapshot.val() || null;
+    updateLiveCountdown();
+});
+
 onValue(ref(db, "spiele"), (snapshot) => {
     spiele = snapshot.val() || {};
     spieleGeladen = true;
@@ -609,6 +622,43 @@ function normalizeLiveGameValue(value) {
 
     return value;
 }
+
+// --- LIVE COUNTDOWN ---
+const GAME_DURATION_MS = 10 * 60 * 1000;
+
+function formatCountdown(ms) {
+    const totalSec = Math.max(0, Math.ceil(ms / 1000));
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function updateLiveCountdown() {
+    const el = document.getElementById("liveCountdown");
+    if (!el) return;
+
+    if (!spielstandData || spielstandData.remainingMs === undefined) {
+        el.textContent = "10:00";
+        return;
+    }
+
+    const { remainingMs, running, updatedAt } = spielstandData;
+
+    if (!running || !updatedAt) {
+        // Pausiert, abgebrochen oder noch nicht gestartet
+        el.textContent = formatCountdown(remainingMs);
+        return;
+    }
+
+    // Präzise Berechnung mit Firebase serverTimeOffset
+    const serverNow = Date.now() + serverTimeOffset;
+    const elapsed = serverNow - updatedAt;
+    const displayMs = Math.max(0, remainingMs - elapsed);
+    el.textContent = formatCountdown(displayMs);
+}
+
+// Jede Sekunde aktualisieren
+setInterval(updateLiveCountdown, 1000);
 
 function updateLiveSpiel(nr) {
     const box = document.getElementById("liveText");
@@ -662,20 +712,18 @@ if (game) {
             <span class="live-indicator"></span> AKTUELLE SPIELE
         </div>
 
-        <div style="font-size: 18px; font-weight: bold; line-height: 1.6;">
-            
-            <div class="game-row">
-                <span class="platz">Platz 1:</span>
-                <span class="teams">${game.a}</span>
-                <span class="result"></span>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 14px; padding: 0 4px;">
+            <div style="flex: 1; min-width: 0;">
+                <div class="game-row" style="max-width: none; margin: 4px 0; grid-template-columns: 72px minmax(0,1fr);">
+                    <span class="platz">Platz 1:</span>
+                    <span class="teams">${game.a}</span>
+                </div>
+                <div class="game-row" style="max-width: none; margin: 4px 0; grid-template-columns: 72px minmax(0,1fr);">
+                    <span class="platz">Platz 2:</span>
+                    <span class="teams">${game.b}</span>
+                </div>
             </div>
-
-            <div class="game-row">
-                <span class="platz">Platz 2:</span>
-                <span class="teams">${game.b}</span>
-                <span class="result"></span>
-            </div>
-
+            <div id="liveCountdown" style="font-size: 28px; font-weight: bold; color: white; min-width: 72px; text-align: center; flex-shrink: 0; letter-spacing: 1px; line-height: 1;">10:00</div>
         </div>
 
         <div class="live-button-container">
@@ -698,6 +746,9 @@ if (game) {
 
                 window.location.href = liveTableLink;
             };
+
+        // Countdown direkt nach dem Rendern aktualisieren
+        updateLiveCountdown();
         }
 } else {
             // Fallback-Text, falls für die Nummer kein Spiel im Objekt 'spiele' ist
