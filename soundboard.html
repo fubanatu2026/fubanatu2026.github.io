@@ -331,8 +331,8 @@
                 <div class="sound-grid">
                     <button class="sound-button global-sound-button" type="button" data-sound="Anpfiff">Anpfiff</button>
                     <button class="sound-button global-sound-button" type="button" data-sound="Abpfiff">Abpfiff</button>
-                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-3">Platzhalter 3</button>
-                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-4">Platzhalter 4</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="letzte Spielminute">letzte Spielminute</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="10 Sekunden Countdown">10 Sekunden Countdown</button>
                     <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-5">Platzhalter 5</button>
                     <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-6">Platzhalter 6</button>
                     <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-7">Platzhalter 7</button>
@@ -646,23 +646,33 @@
             countdownInterval = null;
         }
 
+        function playGlobalSound(dataSound) {
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+            if (currentButton) { currentButton.classList.remove("playing"); currentButton = null; }
+            currentAudio = new Audio(encodeURI(`sounds/${labelToFilename(dataSound)}.mp3`));
+            currentAudio.addEventListener("ended", () => { currentAudio = null; });
+            currentAudio.play().catch(() => { currentAudio = null; });
+        }
+
         function startCountdownTick() {
             clearCountdownInterval();
             countdownInterval = setInterval(() => {
                 if (countdownRemaining <= 0) return;
                 countdownRemaining--;
                 countdownDisplay.textContent = formatTime(countdownRemaining);
+
+                // Automatische Sounds
+                if (countdownRemaining === 60) {
+                    playGlobalSound("letzte Spielminute");
+                } else if (countdownRemaining === 11) {
+                    // 1 Sekunde früher, damit Stimme "10" mit Anzeige 10 synchron ist
+                    playGlobalSound("10 Sekunden Countdown");
+                }
+
                 if (countdownRemaining <= 0) {
                     finishCountdown();
                 }
             }, 1000);
-        }
-
-        function playGlobalSound(name) {
-            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-            if (currentButton) { currentButton.classList.remove("playing"); currentButton = null; }
-            currentAudio = new Audio(encodeURI(`sounds/${name}.mp3`));
-            currentAudio.play().catch(() => {});
         }
 
         function startCountdown() {
@@ -752,7 +762,12 @@
                     currentAudio.addEventListener("ended", () => button.classList.remove("playing"));
                 }
 
-                currentAudio.play().catch(() => button.classList.remove("playing"));
+                currentAudio.play().catch(() => {
+                    button.classList.remove("playing");
+                    currentButton = null;
+                    currentAudio = null;
+                    if (isAnpfiff) startCountdown();
+                });
             });
         });
 
