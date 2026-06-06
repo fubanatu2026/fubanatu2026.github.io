@@ -211,6 +211,10 @@ h2.subtitle {
     position: sticky;
     z-index: 999;
     background: #3414fc;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 12px;
 }
 
 #liveSpiel.full-width {
@@ -866,6 +870,7 @@ h2.subtitle {
     font-size: 18px;
     border-radius: 12px;
     margin: 40px auto 0 auto;
+    max-width: 420px;
     font-weight: bold;
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr) 48px;
