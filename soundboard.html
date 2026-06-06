@@ -317,11 +317,17 @@
 
             <div id="soundboardPanels"></div>
 
+            <!-- Countdown block – shown only while running -->
+            <div id="countdownBlock" style="display:none; margin-top: 14px; background: white; border-radius: 12px; padding: 18px 14px; box-shadow: 0 10px 28px rgba(0,0,0,0.18); text-align: center;">
+                <div id="countdownDisplay" style="font-size: 72px; font-weight: bold; color: #3414fc; font-family: 'FranklinLight', Arial, sans-serif; letter-spacing: 2px; line-height: 1;">10:00</div>
+                <button id="cancelCountdownBtn" type="button" style="margin-top: 14px; border: none; border-radius: 8px; background: #e63946; color: white; font-family: 'FranklinLight', Arial, sans-serif; font-size: 15px; font-weight: bold; padding: 10px 24px; cursor: pointer;">Abbrechen</button>
+            </div>
+
             <div class="soundboard-global" style="margin-top: 14px; background: white; color: black; border-radius: 12px; padding: 14px; box-shadow: 0 10px 28px rgba(0,0,0,0.18);">
                 <h3>Allgemein</h3>
                 <div class="sound-grid">
-                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-1">Platzhalter 1</button>
-                    <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-2">Platzhalter 2</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Anpfiff">Anpfiff</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Abpfiff">Abpfiff</button>
                     <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-3">Platzhalter 3</button>
                     <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-4">Platzhalter 4</button>
                     <button class="sound-button global-sound-button" type="button" data-sound="Platzhalter-5">Platzhalter 5</button>
@@ -338,6 +344,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+        import { getDatabase, ref, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDbviwxqQ-SITuT-5MiqanxKGLM11oPULA",
@@ -351,6 +358,7 @@
         const ADMIN_EMAIL = "admin@fubanatu2026.de";
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getDatabase(app);
 
         // Which buttons are "Sieger"-buttons and what options they get
         // key: "age_gender_label" → options list
@@ -500,7 +508,7 @@
 
             currentButton = button;
             currentButton.classList.add("playing");
-            const filename = `a9f1c8b2_sounds/${labelToFilename(resolvedLabel)}_${selectedGender}.mp3`;
+            const filename = `sounds/${labelToFilename(resolvedLabel)}_${selectedGender}.mp3`;
             currentAudio = new Audio(encodeURI(filename));
             currentAudio.addEventListener("ended", () => button.classList.remove("playing"));
             currentAudio.play().catch(() => button.classList.remove("playing"));
@@ -588,7 +596,7 @@
             button.addEventListener("pointermove",  () => clearTimeout(longPressTimer));
         }
 
-        document.querySelectorAll(".sound-button").forEach(button => {
+        document.querySelectorAll(".sound-button:not(.global-sound-button)").forEach(button => {
             button.addEventListener("click", () => {
                 if (currentButton === button && currentAudio && !currentAudio.paused) {
                     currentAudio.pause();
@@ -605,8 +613,61 @@
             }
         });
 
+        // --- Countdown ---
+        const COUNTDOWN_SECONDS = 10 * 60; // 10 Minuten
+        let countdownInterval = null;
+        let countdownRemaining = 0;
+        const countdownBlock   = document.getElementById("countdownBlock");
+        const countdownDisplay = document.getElementById("countdownDisplay");
+        const cancelBtn        = document.getElementById("cancelCountdownBtn");
+
+        function formatTime(sec) {
+            const m = String(Math.floor(sec / 60)).padStart(2, "0");
+            const s = String(sec % 60).padStart(2, "0");
+            return `${m}:${s}`;
+        }
+
+        function stopCountdown() {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            countdownBlock.style.display = "none";
+        }
+
+        function playGlobalSound(name) {
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+            if (currentButton) { currentButton.classList.remove("playing"); currentButton = null; }
+            currentAudio = new Audio(encodeURI(`sounds/${name}.mp3`));
+            currentAudio.play().catch(() => {});
+        }
+
+        function startCountdown() {
+            if (countdownInterval) stopCountdown();
+            countdownRemaining = COUNTDOWN_SECONDS;
+            countdownDisplay.textContent = formatTime(countdownRemaining);
+            countdownBlock.style.display = "block";
+
+            // In Firebase loggen, dass ein Spiel gestartet wurde
+            push(ref(db, "soundboard/spielstart"), {
+                timestamp: serverTimestamp(),
+                aktiv: true
+            }).catch(() => {}); // Fehler still ignorieren
+
+            countdownInterval = setInterval(() => {
+                countdownRemaining--;
+                countdownDisplay.textContent = formatTime(countdownRemaining);
+                if (countdownRemaining <= 0) {
+                    stopCountdown();
+                    playGlobalSound("Abpfiff");
+                }
+            }, 1000);
+        }
+
+        cancelBtn.addEventListener("click", stopCountdown);
+
         document.querySelectorAll(".global-sound-button").forEach(button => {
             button.addEventListener("click", () => {
+                const isAnpfiff = button.dataset.sound === "Anpfiff";
+
                 if (currentButton === button && currentAudio && !currentAudio.paused) {
                     currentAudio.pause();
                     currentAudio.currentTime = 0;
@@ -614,18 +675,39 @@
                     currentButton = null;
                     return;
                 }
-                // Global sounds: no gender suffix, just sounds/<name>.mp3
-                if (currentAudio) {
-                    currentAudio.pause();
-                    currentAudio.currentTime = 0;
-                }
+
+                if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
                 if (currentButton) currentButton.classList.remove("playing");
                 currentButton = button;
                 currentButton.classList.add("playing");
+
                 const filename = `sounds/${labelToFilename(button.dataset.sound)}.mp3`;
                 currentAudio = new Audio(encodeURI(filename));
-                currentAudio.addEventListener("ended", () => button.classList.remove("playing"));
-                currentAudio.play().catch(() => button.classList.remove("playing"));
+
+                if (isAnpfiff) {
+                    let countdownStarted = false;
+                    const triggerCountdown = () => {
+                        if (countdownStarted) return;
+                        countdownStarted = true;
+                        button.classList.remove("playing");
+                        startCountdown();
+                    };
+                    // Primary: ended event
+                    currentAudio.addEventListener("ended", triggerCountdown);
+                    // Fallback: start after audio duration (once we know it)
+                    currentAudio.addEventListener("loadedmetadata", () => {
+                        setTimeout(triggerCountdown, (currentAudio.duration || 3) * 1000 + 300);
+                    });
+                    // Last-resort fallback: 5 seconds max wait
+                    setTimeout(triggerCountdown, 5000);
+                } else {
+                    currentAudio.addEventListener("ended", () => button.classList.remove("playing"));
+                }
+
+                currentAudio.play().catch(() => {
+                    button.classList.remove("playing");
+                    if (isAnpfiff) startCountdown();
+                });
             });
         });
 
