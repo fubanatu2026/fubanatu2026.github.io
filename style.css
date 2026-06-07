@@ -75,13 +75,16 @@ h1 {
 }
 
 .site-title {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 28px;
+    display: block;
+    text-align: center;
+    position: relative;
 }
 
 .title-icon-button {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
     width: 36px;
     height: 36px;
     border: none;
