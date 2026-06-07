@@ -660,6 +660,18 @@ function updateLiveCountdown() {
 // Jede Sekunde aktualisieren
 setInterval(updateLiveCountdown, 1000);
 
+// Sticky-Erkennung für #liveSpiel: full-width wenn am oberen Rand klebt
+const liveSpielEl = document.getElementById("liveSpiel");
+if (liveSpielEl) {
+    const sentinel = document.createElement("div");
+    sentinel.style.cssText = "height:1px; pointer-events:none; visibility:hidden;";
+    liveSpielEl.parentNode.insertBefore(sentinel, liveSpielEl);
+    new IntersectionObserver(
+        ([entry]) => liveSpielEl.classList.toggle("full-width", !entry.isIntersecting),
+        { threshold: 0 }
+    ).observe(sentinel);
+}
+
 function updateLiveSpiel(nr) {
     const box = document.getElementById("liveText");
     const container = document.getElementById("liveSpiel");

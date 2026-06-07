@@ -6,7 +6,7 @@
 
 @font-face {
     font-family: 'FranklinLight';
-    src: url('franklin-gothic-urw-light.otf') format('opentype');
+    src: url('franklin-gothic-urw-light.ttf') format('truetype');
     font-weight: 300;
     font-style: normal;
 }
@@ -209,6 +209,7 @@ h2.subtitle {
 
 #liveSpiel {
     position: sticky;
+    top: 0;
     z-index: 999;
     background: #3414fc;
     max-width: 420px;
@@ -218,6 +219,7 @@ h2.subtitle {
 }
 
 #liveSpiel.full-width {
+    max-width: none;
     width: auto;
     margin-left: -20px;
     margin-right: -20px;
