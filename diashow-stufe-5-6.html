@@ -21,6 +21,8 @@
             border: none;
         
             opacity: 0;
+            pointer-events: none;
+        
             transform: scale(1.02);
             filter: blur(6px);
         
@@ -32,6 +34,8 @@
         
         .slide.active {
             opacity: 1;
+            pointer-events: auto;
+        
             transform: scale(1);
             filter: blur(0);
         }
@@ -39,13 +43,73 @@
         img.slide {
             object-fit: contain;
         }
-        .active {
-            display: block;
+    
+
+        #slideCountdown {
+            position: fixed;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+        
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        
+            width: 420px;
+            max-width: 80vw;
+        
+            padding: 10px 14px;
+        
+            background: rgba(15,15,15,.6);
+            backdrop-filter: blur(10px);
+        
+            border-radius: 14px;
+        
+            box-shadow:
+                0 8px 24px rgba(0,0,0,.35);
+        }
+        
+        #slideProgress {
+            flex: 1;
+            height: 8px;
+        
+            background: rgba(255,255,255,.15);
+        
+            border-radius: 999px;
+        
+            overflow: hidden;
+        }
+        
+        #slideProgressBar {
+            height: 100%;
+            width: 100%;
+        
+            background: white;
+        
+            border-radius: inherit;
+            transform-origin: left center;
+        }
+        
+        #slideTime {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        
+            min-width: 42px;
+            text-align: right;
         }
     </style>
 </head>
 <body>
-
+    <div id="slideCountdown">
+        <div id="slideProgress">
+            <div id="slideProgressBar"></div>
+        </div>
+    
+        <div id="slideTime">20 s</div>
+    </div>
+    
     <!-- SCHRITT 1: Erste Webseite (20 Sekunden) -->
     <iframe class="slide active" src="https://tournifyapp.com/live/fubanatu2026-stufe-5-6-maennlich/present" data-duration="20000"></iframe>
 
@@ -65,9 +129,45 @@
     <img class="slide" src="diashow-stufe-5-6.jpg" data-duration="10000" alt="Bild">
 
     <script>
+        
         const slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
 
+        const progressBar = document.getElementById("slideProgressBar");
+        const timeText = document.getElementById("slideTime");
+        
+        let slideStart = 0;
+        let slideDuration = 0;
+        let animationId = null;
+        
+        function startCountdown(duration) {
+
+            // Falls noch eine Animation läuft, beenden
+            if (animationId !== null) {
+                cancelAnimationFrame(animationId);
+            }
+        
+            slideStart = performance.now();
+            slideDuration = duration;
+        
+            function animate(now) {
+        
+                const elapsed = now - slideStart;
+                const remaining = Math.max(0, slideDuration - elapsed);
+        
+                const percent = remaining / slideDuration;
+        
+                progressBar.style.transform = `scaleX(${percent})`;
+                timeText.textContent = Math.ceil(remaining / 1000) + " s";
+        
+                if (remaining > 0) {
+                    animationId = requestAnimationFrame(animate);
+                }
+            }
+        
+            animationId = requestAnimationFrame(animate);
+        }
+        
         function runDiashow() {
             slides[currentSlide].classList.remove('active');
         
@@ -82,9 +182,11 @@
         
             const duration = parseInt(slides[currentSlide].dataset.duration, 10);
             setTimeout(runDiashow, duration);
+            startCountdown(duration);
         }
 
         const firstDuration = parseInt(slides[currentSlide].getAttribute('data-duration'), 10);
+        startCountdown(firstDuration);
         setTimeout(runDiashow, firstDuration);
     </script>
 </body>
