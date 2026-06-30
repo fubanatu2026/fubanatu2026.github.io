@@ -14,18 +14,30 @@
             background-color: #000;
         }
         .slide {
-            display: none;
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
             border: none;
-            position: absolute;
-            top: 0;
-            left: 0;
+        
+            opacity: 0;
+            transform: scale(1.02);
+            filter: blur(6px);
+        
+            transition:
+                opacity .7s ease,
+                transform .7s ease,
+                filter .7s ease;
         }
+        
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0);
+        }
+        
         img.slide {
-            object-fit: contain; /* Zeigt das Bild voll an. Nutze 'cover' für absolut randlos */
-            width: 100%;
-            height: 100%;
+            object-fit: contain;
         }
         .active {
             display: block;
@@ -58,10 +70,17 @@
 
         function runDiashow() {
             slides[currentSlide].classList.remove('active');
+        
             currentSlide = (currentSlide + 1) % slides.length;
+        
+            // iframe beim Anzeigen neu laden
+            if (slides[currentSlide].tagName === "IFRAME") {
+                slides[currentSlide].src = slides[currentSlide].src;
+            }
+        
             slides[currentSlide].classList.add('active');
-
-            const duration = parseInt(slides[currentSlide].getAttribute('data-duration'), 10);
+        
+            const duration = parseInt(slides[currentSlide].dataset.duration, 10);
             setTimeout(runDiashow, duration);
         }
 
