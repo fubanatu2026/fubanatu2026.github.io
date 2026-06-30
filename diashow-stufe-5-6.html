@@ -8,7 +8,18 @@
         :root {
             --header-height: 60px;
         }
-
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+        
+        
+        /* Countdown-Leiste oben */
         #slideCountdown {
             position: fixed;
             top: 0;
@@ -22,18 +33,60 @@
             justify-content: center;
             gap: 14px;
         
-            background: #000;
+            background: rgba(15,15,15,.75);
+            backdrop-filter: blur(10px);
+        
             z-index: 9999;
+        
+            padding: 0 20px;
+            box-sizing: border-box;
+        
+            box-shadow:
+                0 4px 15px rgba(0,0,0,.35);
         }
         
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+        
+        /* Fortschrittsbalken */
+        #slideProgress {
+            width: 420px;
+            max-width: 70vw;
+        
+            height: 8px;
+        
+            background: rgba(255,255,255,.15);
+        
+            border-radius: 999px;
+        
             overflow: hidden;
-            background-color: #000;
         }
+        
+        
+        #slideProgressBar {
+            height: 100%;
+            width: 100%;
+        
+            background: white;
+        
+            border-radius: inherit;
+        
+            transform-origin: left center;
+        }
+        
+        
+        /* Sekundenanzeige */
+        #slideTime {
+            font-size: 18px;
+            font-weight: 700;
+        
+            color: white;
+        
+            min-width: 42px;
+        
+            text-align: right;
+        }
+        
+        
+        /* Slides */
         .slide {
             position: absolute;
         
@@ -57,72 +110,22 @@
                 filter .7s ease;
         }
         
+        
+        /* Aktiver Slide */
         .slide.active {
             opacity: 1;
+        
             pointer-events: auto;
         
             transform: scale(1);
+        
             filter: blur(0);
         }
         
+        
+        /* Bilder passend einpassen */
         img.slide {
             object-fit: contain;
-        }
-    
-
-        #slideCountdown {
-            position: fixed;
-            top: 18px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-        
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        
-            width: 420px;
-            max-width: 80vw;
-        
-            padding: 10px 14px;
-        
-            background: rgba(15,15,15,.6);
-            backdrop-filter: blur(10px);
-        
-            border-radius: 14px;
-        
-            box-shadow:
-                0 8px 24px rgba(0,0,0,.35);
-        }
-        
-        #slideProgress {
-            flex: 1;
-            height: 8px;
-        
-            background: rgba(255,255,255,.15);
-        
-            border-radius: 999px;
-        
-            overflow: hidden;
-        }
-        
-        #slideProgressBar {
-            height: 100%;
-            width: 100%;
-        
-            background: white;
-        
-            border-radius: inherit;
-            transform-origin: left center;
-        }
-        
-        #slideTime {
-            font-size: 18px;
-            font-weight: 700;
-            color: white;
-        
-            min-width: 42px;
-            text-align: right;
         }
     </style>
 </head>
