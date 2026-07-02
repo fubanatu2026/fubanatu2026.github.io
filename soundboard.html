@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuBaNaTu 2026 Soundboard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: #5c44e4;
+            min-height: 100vh;
+        }
+
+        body.auth-checking .soundboard-area {
+            display: none;
+        }
+
+        .access-denied {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            box-sizing: border-box;
+            color: white;
+            font-family: 'FranklinLight', Arial, sans-serif;
+            text-align: center;
+        }
+
+        .access-denied-box {
+            width: min(420px, 100%);
+            background: white;
+            color: #3414fc;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.2);
+        }
+
+        .soundboard-area {
+            min-height: 100vh;
+            padding: 28px 14px 38px;
+            box-sizing: border-box;
+        }
+
+        .soundboard-shell {
+            width: min(980px, 100%);
+            margin: 0 auto;
+        }
+
+        .soundboard-top {
+            display: grid;
+            gap: 12px;
+            margin: 18px auto 18px;
+            max-width: 720px;
+        }
+
+        .soundboard-control {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            padding: 6px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.16);
+        }
+
+        .soundboard-control.gender-control {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            max-width: 240px;
+            margin: 0 auto;
+        }
+
+        .soundboard-control.age-control {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .soundboard-choice {
+            border: none;
+            border-radius: 7px;
+            padding: 10px 8px;
+            background: rgba(255,255,255,0.88);
+            color: #3414fc;
+            font-family: 'FranklinLight', Arial, sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .soundboard-choice.active {
+            background: #3414fc;
+            color: white;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+        }
+
+        .soundboard-panel {
+            display: none;
+            background: white;
+            color: black;
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+        }
+
+        .soundboard-panel.active {
+            display: block;
+        }
+
+        .soundboard-panel h3 {
+            margin: 0 0 12px;
+            color: #3414fc;
+            font-size: 18px;
+        }
+
+        .sound-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .sound-button {
+            min-height: 58px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'FranklinLight', Arial, sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.14);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.08s, filter 0.08s;
+        }
+
+        .sound-button.gender-m {
+            background: #1f6fe5;
+        }
+
+        .sound-button.gender-w {
+            background: #e6428a;
+        }
+
+        .sound-button:active {
+            transform: translateY(1px);
+        }
+
+        .global-sound-button {
+            background: #5c44e4;
+        }
+
+        .sound-button.playing {
+            outline: 3px solid rgba(255,255,255,0.9);
+            outline-offset: -5px;
+            filter: brightness(1.08);
+        }
+
+        .soundboard-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 18px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Context menu */
+        .ctx-menu {
+            position: fixed;
+            z-index: 1000;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+            padding: 6px 0;
+            min-width: 160px;
+            animation: ctxFadeIn 0.12s ease;
+        }
+
+        @keyframes ctxFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .ctx-menu-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #888;
+            padding: 4px 14px 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .ctx-menu-item {
+            display: block;
+            width: 100%;
+            border: none;
+            background: none;
+            text-align: left;
+            padding: 9px 14px;
+            font-family: 'FranklinLight', Arial, sans-serif;
+            font-size: 15px;
+            color: #222;
+            cursor: pointer;
+        }
+
+        .ctx-menu-item:hover {
+            background: #f0eeff;
+            color: #3414fc;
+        }
+
+        .ctx-menu-item.active-choice {
+            color: #3414fc;
+            font-weight: bold;
+        }
+
+        .ctx-menu-item.empty-choice {
+            color: #999;
+            font-style: italic;
+        }
+
+        .ctx-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+        }
+
+
+
+        @media (max-width: 700px) {
+            h1 {
+                font-size: 27px;
+            }
+
+            .soundboard-area {
+                padding: 18px 10px 32px;
+            }
+
+            .soundboard-top {
+                gap: 10px;
+                margin: 12px auto 14px;
+            }
+
+            .soundboard-control.gender-control {
+                max-width: 100%;
+            }
+
+            .soundboard-control.age-control {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .soundboard-choice {
+                padding: 12px 8px;
+                font-size: 14px;
+            }
+
+            .soundboard-panel,
+            .soundboard-global {
+                padding: 12px;
+            }
+
+            .sound-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .sound-button {
+                min-height: 56px;
+                font-size: 13px;
+            }
+        }
+
+        /* Tablet landscape & small desktop */
+        @media (min-width: 701px) and (max-width: 1024px) {
+            .soundboard-shell {
+                width: min(700px, 100%);
+            }
+
+            .sound-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 420px) {
+            .sound-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 7px;
+            }
+
+            .sound-button {
+                min-height: 60px;
+                font-size: 13px;
+            }
+
+            .soundboard-control.gender-control {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="auth-checking">
+    <main class="soundboard-area">
+        <div class="soundboard-shell">
+            <h1 class="site-title">FuBaNaTu 2026</h1>
+            <h2 class="subtitle">Soundboard</h2>
+
+            <div class="soundboard-top" aria-label="Soundboard Auswahl">
+                <div class="soundboard-control gender-control" aria-label="Geschlecht auswählen">
+                    <button class="soundboard-choice active" type="button" data-gender-option="m">m</button>
+                    <button class="soundboard-choice" type="button" data-gender-option="w">w</button>
+                </div>
+
+                <div class="soundboard-control age-control" aria-label="Altersstufe auswählen">
+                    <button class="soundboard-choice active" type="button" data-age="56">5/6</button>
+                    <button class="soundboard-choice" type="button" data-age="78">7/8</button>
+                    <button class="soundboard-choice" type="button" data-age="910">9/10</button>
+                    <button class="soundboard-choice" type="button" data-age="haupt">Hauptturnier</button>
+                </div>
+            </div>
+
+            <div id="soundboardPanels"></div>
+
+            <!-- Countdown block – shown only while running or finished -->
+            <div id="countdownBlock" style="display:none; margin-top: 14px; background: white; border-radius: 12px; padding: 18px 14px; box-shadow: 0 10px 28px rgba(0,0,0,0.18); text-align: center;">
+                <div id="countdownDisplay" style="font-size: 72px; font-weight: bold; color: #3414fc; font-family: 'FranklinLight', Arial, sans-serif; letter-spacing: 2px; line-height: 1;">10:00</div>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 14px;">
+                    <button id="cancelCountdownBtn" type="button" style="border: none; border-radius: 8px; background: #e63946; color: white; font-family: 'FranklinLight', Arial, sans-serif; font-size: 15px; font-weight: bold; padding: 10px 24px; cursor: pointer;">Abbrechen</button>
+                    <button id="pauseCountdownBtn" type="button" style="border: none; border-radius: 8px; background: #3414fc; color: white; font-family: 'FranklinLight', Arial, sans-serif; font-size: 15px; font-weight: bold; padding: 10px 24px; cursor: pointer;">Pause</button>
+                </div>
+            </div>
+
+            <div class="soundboard-global" style="margin-top: 14px; background: white; color: black; border-radius: 12px; padding: 14px; box-shadow: 0 10px 28px rgba(0,0,0,0.18);">
+                <h3>Allgemein</h3>
+                <div class="sound-grid">
+                    <button class="sound-button global-sound-button" type="button" data-sound="Anpfiff">Anpfiff</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Abpfiff">Abpfiff</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="letzte Spielminute">letzte Spielminute</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="10 Sekunden Countdown">10 Sekunden Countdown</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Einlaufmusik">Einlaufmusik</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Siegerehrung">Siegerehrung</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Applaus">Applaus</button>
+                    <button class="sound-button global-sound-button" type="button" data-sound="Lachen">Lachen</button>
+                </div>
+            </div>
+
+            <a class="soundboard-back" href="index.html">Zurück zur Turnierseite</a>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+        import { getDatabase, ref, set, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbviwxqQ-SITuT-5MiqanxKGLM11oPULA",
+            authDomain: "fubanatu-2026.firebaseapp.com",
+            databaseURL: "https://fubanatu-2026-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "fubanatu-2026",
+            storageBucket: "fubanatu-2026.firebasestorage.app",
+            messagingSenderId: "350065123550",
+            appId: "1:350065123550:web:f2f7b412f9dadc4b4ee24f"
+        };
+        const ADMIN_EMAIL = "admin@fubanatu2026.de";
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Which buttons are "Sieger"-buttons and what options they get
+        // key: "age_gender_label" → options list
+        const SIEGER_CONFIGS = {
+            "910_m_Sieger 7/8":    { options: ["7a","7b","7c","7d","8a","8b","8c","8d"] },
+            "910_w_Sieger 7/8":    { options: ["7a","7b","7c","7d","8a","8b","8c","8d"] },
+            "haupt_m_Sieger 9/10": { options: ["9a","9b","9c","9d","10a","10b","10c","Sieger 7/8"] },
+            "haupt_w_Sieger 9/10": { options: ["9a","9b","9c","9d","10a","10b","10c","Sieger 7/8"] },
+        };
+
+        // Current sieger mappings: { "910_m_Sieger 7/8": "7c", ... }
+        const siegerMap = {};
+
+        // Load from localStorage
+        function loadSieger() {
+            Object.keys(SIEGER_CONFIGS).forEach(configKey => {
+                const val = localStorage.getItem("sieger_" + configKey) || null;
+                siegerMap[configKey] = val;
+            });
+        }
+
+        // Save one entry to localStorage and refresh all sieger buttons
+        function saveSieger(configKey, choice) {
+            if (choice) {
+                localStorage.setItem("sieger_" + configKey, choice);
+            } else {
+                localStorage.removeItem("sieger_" + configKey);
+            }
+            siegerMap[configKey] = choice || null;
+            refreshAllSiegerButtons();
+        }
+
+        // Extracts gender from a configKey like "910_m_Sieger 7/8"
+        function genderFromKey(configKey) {
+            const first = configKey.indexOf("_");
+            const second = configKey.indexOf("_", first + 1);
+            return configKey.slice(first + 1, second);
+        }
+
+        // Fully resolves a configKey to the final concrete class name for display/playback
+        function resolveConfigKey(configKey) {
+            const val = siegerMap[configKey];
+            if (!val) return null;
+            const gender = genderFromKey(configKey);
+            return resolveSieger(val, gender);
+        }
+
+        // Refreshes ALL sieger buttons – needed because changing 9/10 also affects haupt display
+        function refreshAllSiegerButtons() {
+            Object.keys(SIEGER_CONFIGS).forEach(configKey => {
+                const resolved = resolveConfigKey(configKey);
+                document.querySelectorAll(`[data-sieger-key="${configKey}"]`).forEach(btn => {
+                    btn.textContent = resolved || btn.dataset.sound;
+                });
+            });
+        }
+
+        // Apply on load
+        function applySiegerToButtons() {
+            refreshAllSiegerButtons();
+        }
+
+        const ages = [
+            { id: "56", label: "5/6" },
+            { id: "78", label: "7/8" },
+            { id: "910", label: "9/10" },
+            { id: "haupt", label: "Hauptturnier" }
+        ];
+        const genders = [
+            { id: "m", label: "m" },
+            { id: "w", label: "w" }
+        ];
+        const soundLabels = {
+            "56": ["5a", "5b", "5c", "5d", "6a", "6b", "6c", "6d"],
+            "78": ["7a", "7b", "7c", "7d", "8a", "8b", "8c", "8d"],
+            "910": ["9a", "9b", "9c", "9d", "10a", "10b", "10c", "Sieger 7/8"],
+            "haupt": ["EF 1", "EF 2", "Q1 1", "Q1 2", "Q1 3", "Lehrkräfte", "Ehemalige 1", "Ehemalige 2", "Ehemalige 3", "Sieger 9/10"]
+        };
+        let selectedGender = localStorage.getItem("sb_gender") || "m";
+        let selectedAge    = localStorage.getItem("sb_age")    || "56";
+        let currentAudio = null;
+        let currentButton = null;
+
+        const panels = document.getElementById("soundboardPanels");
+
+        genders.forEach(gender => {
+            ages.forEach(age => {
+                const labels = soundLabels[age.id] || [];
+                const panel = document.createElement("section");
+                panel.className = "soundboard-panel";
+                panel.dataset.gender = gender.id;
+                panel.dataset.age = age.id;
+                panel.innerHTML = `
+                    <h3>${gender.label} - ${age.label}</h3>
+                    <div class="sound-grid">
+                        ${labels.map(label => {
+                            const configKey = `${age.id}_${gender.id}_${label}`;
+                            const isSieger = configKey in SIEGER_CONFIGS;
+                            return `<button class="sound-button gender-${gender.id}" type="button"
+                                data-sound="${label}"
+                                ${isSieger ? `data-sieger-key="${configKey}"` : ""}
+                            >${label}</button>`;
+                        }).join("")}
+                    </div>
+                `;
+                panels.appendChild(panel);
+            });
+        });
+
+        function labelToFilename(label) {
+            return label.replace(/ /g, "-").replace(/\//g, "-");
+        }
+
+        // Resolves a label to a concrete class name, following sieger chains.
+        // e.g. "Sieger 9/10" (haupt, m) → "Sieger 7/8" → "7c"
+        function resolveSieger(label, gender) {
+            let resolved = label;
+            for (let i = 0; i < 3; i++) {
+                // Look for a sieger config whose label+gender matches what we have
+                const matchKey = Object.keys(SIEGER_CONFIGS).find(k => {
+                    // Keys are like "910_m_Sieger 7/8" or "haupt_w_Sieger 9/10"
+                    // gender is always the second segment
+                    const firstUnderscore = k.indexOf("_");
+                    const secondUnderscore = k.indexOf("_", firstUnderscore + 1);
+                    const keyGender = k.slice(firstUnderscore + 1, secondUnderscore);
+                    const keyLabel  = k.slice(secondUnderscore + 1);
+                    return keyGender === gender && keyLabel === resolved;
+                });
+                if (matchKey && siegerMap[matchKey]) {
+                    resolved = siegerMap[matchKey];
+                } else {
+                    break; // no further mapping → we have our final class
+                }
+            }
+            return resolved;
+        }
+
+        function playSound(label, button) {
+            // Resolve sieger chain (works for normal buttons too – they just won't match any key)
+            const resolvedLabel = resolveSieger(label, selectedGender);
+
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+            if (currentButton) currentButton.classList.remove("playing");
+
+            currentButton = button;
+            currentButton.classList.add("playing");
+            const filename = `a9f1c8b2_sounds/${labelToFilename(resolvedLabel)}_${selectedGender}.mp3`;
+            currentAudio = new Audio(encodeURI(filename));
+            currentAudio.addEventListener("ended", () => button.classList.remove("playing"));
+            currentAudio.play().catch(() => button.classList.remove("playing"));
+        }
+
+        // --- Context menu ---
+        let ctxMenu = null;
+        let ctxOverlay = null;
+        let longPressTimer = null;
+
+        function closeCtxMenu() {
+            if (ctxMenu)    { ctxMenu.remove();    ctxMenu = null; }
+            if (ctxOverlay) { ctxOverlay.remove(); ctxOverlay = null; }
+        }
+
+        function openCtxMenu(button, x, y) {
+            closeCtxMenu();
+            const configKey = button.dataset.siegerKey;
+            const config = SIEGER_CONFIGS[configKey];
+            if (!config) return;
+
+            const current = siegerMap[configKey] || null;
+
+            ctxOverlay = document.createElement("div");
+            ctxOverlay.className = "ctx-overlay";
+            ctxOverlay.addEventListener("click", closeCtxMenu);
+            document.body.appendChild(ctxOverlay);
+
+            const menu = document.createElement("div");
+            menu.className = "ctx-menu";
+
+            const title = document.createElement("div");
+            title.className = "ctx-menu-title";
+            title.textContent = button.dataset.sound + " zuordnen";
+            menu.appendChild(title);
+
+            const emptyItem = document.createElement("button");
+            emptyItem.className = "ctx-menu-item empty-choice" + (current === null ? " active-choice" : "");
+            emptyItem.textContent = "— Leer (kein Song) —";
+            emptyItem.addEventListener("click", () => {
+                saveSieger(configKey, null);
+                closeCtxMenu();
+            });
+            menu.appendChild(emptyItem);
+
+            config.options.forEach(opt => {
+                const item = document.createElement("button");
+                item.className = "ctx-menu-item" + (opt === current ? " active-choice" : "");
+                item.textContent = opt;
+                item.addEventListener("click", () => {
+                    saveSieger(configKey, opt);
+                    closeCtxMenu();
+                });
+                menu.appendChild(item);
+            });
+
+            document.body.appendChild(menu);
+            ctxMenu = menu;
+
+            // Position menu, keep inside viewport
+            const mw = 180, mh = menu.offsetHeight || 300;
+            let left = x, top = y;
+            if (left + mw > window.innerWidth)  left = window.innerWidth - mw - 8;
+            if (top  + mh > window.innerHeight) top  = window.innerHeight - mh - 8;
+            menu.style.left = left + "px";
+            menu.style.top  = top  + "px";
+        }
+
+        function attachSiegerMenu(button) {
+            // Right-click (desktop)
+            button.addEventListener("contextmenu", (e) => {
+                e.preventDefault();
+                openCtxMenu(button, e.clientX, e.clientY);
+            });
+
+            // Long-press (mobile)
+            button.addEventListener("pointerdown", (e) => {
+                longPressTimer = setTimeout(() => {
+                    const rect = button.getBoundingClientRect();
+                    openCtxMenu(button, rect.left, rect.bottom + 4);
+                }, 500);
+            });
+            button.addEventListener("pointerup",    () => clearTimeout(longPressTimer));
+            button.addEventListener("pointercancel",() => clearTimeout(longPressTimer));
+            button.addEventListener("pointermove",  () => clearTimeout(longPressTimer));
+        }
+
+        document.querySelectorAll(".sound-button:not(.global-sound-button)").forEach(button => {
+            button.addEventListener("click", () => {
+                if (currentButton === button && currentAudio && !currentAudio.paused) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                    button.classList.remove("playing");
+                    currentButton = null;
+                    return;
+                }
+                playSound(button.dataset.sound, button);
+            });
+
+            if (button.dataset.siegerKey) {
+                attachSiegerMenu(button);
+            }
+        });
+
+        // --- Countdown ---
+        const COUNTDOWN_MS = 10 * 60 * 1000;
+        let spielstandData = null;
+        let sbServerTimeOffset = 0;
+        let countdownPaused = false;
+
+        // Auto-Sound-Flags – verhindern Wiedergabe beim Tab-Öffnen oder Doppel-Trigger
+        let minuteWarningPlayed = false;
+        let tenSecWarningPlayed = false;
+        let abpfiffPlayed = false;
+        let sbInitialized = false;
+
+        const countdownBlock   = document.getElementById("countdownBlock");
+        const countdownDisplay = document.getElementById("countdownDisplay");
+        const cancelBtn        = document.getElementById("cancelCountdownBtn");
+        const pauseBtn         = document.getElementById("pauseCountdownBtn");
+
+        function formatTime(sec) {
+            const m = String(Math.floor(sec / 60)).padStart(2, "0");
+            const s = String(sec % 60).padStart(2, "0");
+            return `${m}:${s}`;
+        }
+
+        function writeSpielstand(remainingMs, running) {
+            set(ref(db, "soundboard/spielstand"), {
+                remainingMs,
+                running,
+                updatedAt: serverTimestamp()
+            }).catch(() => {});
+        }
+
+        // Berechnet verbleibende Millisekunden aus Firebase-Daten + Serverzeit-Offset
+        function getCurrentRemainingMs() {
+            if (!spielstandData) return COUNTDOWN_MS;
+            const { remainingMs, running, updatedAt } = spielstandData;
+            if (!running || !updatedAt) return remainingMs;
+            const serverNow = Date.now() + sbServerTimeOffset;
+            return Math.max(0, remainingMs - (serverNow - updatedAt));
+        }
+
+        function playGlobalSound(dataSound) {
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+            if (currentButton) { currentButton.classList.remove("playing"); currentButton = null; }
+            currentAudio = new Audio(encodeURI(`a9f1c8b2_sounds/${labelToFilename(dataSound)}.mp3`));
+            currentAudio.addEventListener("ended", () => { currentAudio = null; });
+            currentAudio.play().catch(() => { currentAudio = null; });
+        }
+
+        function updateSoundboardCountdown() {
+            const ms  = getCurrentRemainingMs();
+            const sec = Math.ceil(ms / 1000);
+            countdownDisplay.textContent = formatTime(Math.max(0, sec));
+
+            const isRunning = spielstandData && spielstandData.running;
+            if (!isRunning) return; // Auto-Sounds nur bei laufendem Countdown
+
+            // Letzte Spielminute – nach laufender Torhymne, falls noch Zeit
+            if (sec <= 60 && !minuteWarningPlayed) {
+                minuteWarningPlayed = true;
+                if (currentAudio && !currentAudio.paused && sec > 50) {
+                    currentAudio.addEventListener("ended", () => {
+                        if (spielstandData && spielstandData.running) {
+                            playGlobalSound("letzte Spielminute");
+                        }
+                    }, { once: true });
+                } else {
+                    playGlobalSound("letzte Spielminute");
+                }
+            }
+
+            // 10 Sekunden Countdown – bei genau 10 Sekunden
+            if (sec <= 10 && !tenSecWarningPlayed) {
+                tenSecWarningPlayed = true;
+                playGlobalSound("10 Sekunden Countdown");
+            }
+
+            // Abpfiff – Zeit abgelaufen
+            if (ms <= 0 && !abpfiffPlayed) {
+                abpfiffPlayed = true;
+                writeSpielstand(0, false);
+                pauseBtn.disabled = true;
+                countdownBlock.style.display = "none";
+                playGlobalSound("Abpfiff");
+            }
+        }
+
+        // Firebase: Serverzeit-Offset für präzise Berechnung
+        onValue(ref(db, ".info/serverTimeOffset"), (snap) => {
+            sbServerTimeOffset = snap.val() || 0;
+        });
+
+        // Firebase: Spielstand-Listener
+        onValue(ref(db, "soundboard/spielstand"), (snap) => {
+            spielstandData = snap.val() || null;
+
+            if (!spielstandData) {
+                countdownBlock.style.display = "none";
+                sbInitialized = true;
+                return;
+            }
+
+            const { remainingMs, running } = spielstandData;
+
+            // Beim ersten Laden: Flags setzen damit bereits vergangene Sounds nicht nochmal spielen
+            if (!sbInitialized) {
+                sbInitialized = true;
+                const ms = getCurrentRemainingMs();
+                const sec = Math.ceil(ms / 1000);
+                if (sec < 60)  minuteWarningPlayed = true;
+                if (sec <= 10) tenSecWarningPlayed = true;
+                if (ms <= 0)   abpfiffPlayed = true;
+            }
+
+            // Block ein-/ausblenden
+            if ((remainingMs >= COUNTDOWN_MS && !running) || remainingMs <= 0) {
+                countdownBlock.style.display = "none";
+            } else {
+                countdownBlock.style.display = "block";
+            }
+
+            // Pause-Button-Status
+            if (remainingMs <= 0) {
+                countdownPaused = false;
+                pauseBtn.textContent = "Pause";
+                pauseBtn.disabled = true;
+            } else if (running) {
+                countdownPaused = false;
+                pauseBtn.textContent = "Pause";
+                pauseBtn.disabled = false;
+            } else {
+                countdownPaused = true;
+                pauseBtn.textContent = "Fortsetzen";
+                pauseBtn.disabled = false;
+            }
+
+            updateSoundboardCountdown();
+        });
+
+        // Anzeige alle 500ms aktualisieren – nur Berechnung, kein Firebase-Write
+        setInterval(updateSoundboardCountdown, 500);
+
+        function startCountdown() {
+            minuteWarningPlayed = false;
+            tenSecWarningPlayed = false;
+            abpfiffPlayed = false;
+            countdownPaused = false;
+            pauseBtn.textContent = "Pause";
+            pauseBtn.disabled = false;
+            countdownBlock.style.display = "block";
+            countdownDisplay.textContent = "10:00";
+            writeSpielstand(COUNTDOWN_MS, true);
+        }
+
+        function cancelCountdown() {
+            minuteWarningPlayed = false;
+            tenSecWarningPlayed = false;
+            abpfiffPlayed = false;
+            countdownPaused = false;
+            countdownBlock.style.display = "none";
+            pauseBtn.textContent = "Pause";
+            pauseBtn.disabled = false;
+            writeSpielstand(COUNTDOWN_MS, false);
+            if (currentButton) currentButton.classList.remove("playing");
+            currentButton = null;
+            currentAudio = null;
+        }
+
+        function togglePause() {
+            const currentMs = getCurrentRemainingMs();
+            if (currentMs <= 0) return;
+            if (countdownPaused) {
+                writeSpielstand(currentMs, true);
+            } else {
+                writeSpielstand(currentMs, false);
+            }
+        }
+
+        cancelBtn.addEventListener("click", cancelCountdown);
+        pauseBtn.addEventListener("click", togglePause);
+
+        document.querySelectorAll(".global-sound-button").forEach(button => {
+            button.addEventListener("click", () => {
+                const isAnpfiff = button.dataset.sound === "Anpfiff";
+
+                if (currentButton === button && currentAudio && !currentAudio.paused) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                    button.classList.remove("playing");
+                    currentButton = null;
+                    return;
+                }
+
+                if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+                if (currentButton) currentButton.classList.remove("playing");
+                currentButton = button;
+                currentButton.classList.add("playing");
+
+                const filename = `a9f1c8b2_sounds/${labelToFilename(button.dataset.sound)}.mp3`;
+                currentAudio = new Audio(encodeURI(filename));
+
+                if (isAnpfiff) {
+                    currentAudio.addEventListener("ended", () => {
+                        button.classList.remove("playing");
+                        currentButton = null;
+                        currentAudio = null;
+                        startCountdown();
+                    });
+                } else {
+                    currentAudio.addEventListener("ended", () => button.classList.remove("playing"));
+                }
+
+                currentAudio.play().catch(() => {
+                    button.classList.remove("playing");
+                    currentButton = null;
+                    currentAudio = null;
+                    if (isAnpfiff) startCountdown();
+                });
+            });
+        });
+
+        function updateSoundboard() {
+            document.querySelectorAll(".soundboard-panel").forEach(panel => {
+                panel.classList.toggle(
+                    "active",
+                    panel.dataset.gender === selectedGender && panel.dataset.age === selectedAge
+                );
+            });
+
+            document.querySelectorAll(".soundboard-choice[data-gender-option]").forEach(button => {
+                button.classList.toggle("active", button.dataset.genderOption === selectedGender);
+            });
+
+            document.querySelectorAll(".soundboard-choice[data-age]").forEach(button => {
+                button.classList.toggle("active", button.dataset.age === selectedAge);
+            });
+        }
+
+        document.querySelectorAll(".soundboard-choice[data-gender-option]").forEach(button => {
+            button.addEventListener("click", () => {
+                selectedGender = button.dataset.genderOption;
+                localStorage.setItem("sb_gender", selectedGender);
+                updateSoundboard();
+            });
+        });
+
+        document.querySelectorAll(".soundboard-choice[data-age]").forEach(button => {
+            button.addEventListener("click", () => {
+                selectedAge = button.dataset.age;
+                localStorage.setItem("sb_age", selectedAge);
+                updateSoundboard();
+            });
+        });
+
+        function denyAccess() {
+            document.body.classList.remove("auth-checking");
+            document.body.innerHTML = `
+                <div class="access-denied">
+                    <div class="access-denied-box">
+                        <h1>Zugriff verweigert</h1>
+                        <p>Bitte zuerst im Admin-Menü der Turnierseite anmelden.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user || user.email !== ADMIN_EMAIL) {
+                denyAccess();
+                return;
+            }
+
+            document.body.classList.remove("auth-checking");
+            loadSieger();
+            applySiegerToButtons();
+            updateSoundboard();
+        });
+    </script>
+</body>
+</html>
