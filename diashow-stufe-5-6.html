@@ -168,6 +168,7 @@
         let slideStart = 0;
         let slideDuration = 0;
         let animationId = null;
+        let preloadTimer = null;
         
         function startCountdown(duration) {
 
@@ -259,35 +260,55 @@
             iframe.src = iframe.src;
         }
 
-        function runDiashow() {
-            slides[currentSlide].classList.remove('active');
-        
-            currentSlide = (currentSlide + 1) % slides.length;
-        
-        
-            // iframe beim Anzeigen neu laden
-            if (slides[currentSlide].tagName === "IFRAME") {
+        function preloadNextSlide() {
 
-                if (slides[currentSlide].id === "homepageFrame") {
+            const nextSlide = slides[(currentSlide + 1) % slides.length];
 
-                    autoScrollIframe(slides[currentSlide]);
+            if (nextSlide.tagName === "IFRAME") {
+                nextSlide.src = nextSlide.src;
+            }
 
-                } else {
-
-                    slides[currentSlide].src = slides[currentSlide].src;
-
-                }
 }
-        
+
+        function runDiashow() {
+
+            if (preloadTimer !== null) {
+                clearTimeout(preloadTimer);
+            }
+
+            slides[currentSlide].classList.remove('active');
+
+            currentSlide = (currentSlide + 1) % slides.length;
+
+            // Nur bei der GitHub-Seite Scroll starten
+            if (
+                slides[currentSlide].tagName === "IFRAME" &&
+                slides[currentSlide].id === "homepageFrame"
+            ) {
+
+                autoScrollIframe(slides[currentSlide]);
+
+            }
+
             slides[currentSlide].classList.add('active');
-        
+
             const duration = parseInt(slides[currentSlide].dataset.duration, 10);
+
+            // 5 Sekunden vor dem Wechsel den nächsten iframe neu laden
+            preloadTimer = setTimeout(preloadNextSlide, Math.max(0, duration - 5000));
+
             setTimeout(runDiashow, duration);
+
             startCountdown(duration);
         }
 
-        const firstDuration = parseInt(slides[currentSlide].getAttribute('data-duration'), 10);
+        const firstDuration = parseInt(slides[currentSlide].dataset.duration, 10);
+
         startCountdown(firstDuration);
+
+        // Bereits 5 Sekunden vor dem ersten Wechsel den nächsten Slide laden
+        preloadTimer = setTimeout(preloadNextSlide, Math.max(0, firstDuration - 5000));
+
         setTimeout(runDiashow, firstDuration);
     </script>
 </body>
