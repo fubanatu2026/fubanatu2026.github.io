@@ -152,7 +152,7 @@
     <img class="slide" src="diashow-stufe-5-6.jpg" data-duration="10000" alt="Bild">
 
     <!-- SCHRITT 5: Dritte Webseite (20 Sekunden) -->
-    <iframe class="slide" src="https://fubanatu2026.github.io/" data-duration="20000"></iframe>
+    <iframe id="homepageFrame" class="slide" src="https://fubanatu2026.github.io/" data-duration="20000"></iframe>
 
     <!-- SCHRITT 6: Das gleiche Bild noch einmal (10 Sekunden) -->
     <img class="slide" src="diashow-stufe-5-6.jpg" data-duration="10000" alt="Bild">
@@ -197,6 +197,46 @@
             animationId = requestAnimationFrame(animate);
         }
         
+        function autoScrollIframe(iframe) {
+
+            iframe.onload = function () {
+
+                const win = iframe.contentWindow;
+                const doc = iframe.contentDocument;
+
+                // ========= HIER GESCHWINDIGKEIT ÄNDERN =========
+                // 1 = sehr langsam
+                // 2 = normal
+                // 3 = schneller
+                const speed = 1;
+                // ===============================================
+
+                const maxScroll =
+                    doc.documentElement.scrollHeight - win.innerHeight;
+
+                const duration =
+                    parseInt(iframe.dataset.duration) / speed;
+
+                const start = performance.now();
+
+                function animate(now) {
+
+                    const progress = Math.min((now - start) / duration, 1);
+
+                    win.scrollTo(0, maxScroll * progress);
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    }
+                }
+
+                requestAnimationFrame(animate);
+            };
+
+            // Seite neu laden
+            iframe.src = iframe.src;
+        }
+
         function runDiashow() {
             slides[currentSlide].classList.remove('active');
         
@@ -204,8 +244,17 @@
         
             // iframe beim Anzeigen neu laden
             if (slides[currentSlide].tagName === "IFRAME") {
-                slides[currentSlide].src = slides[currentSlide].src;
-            }
+
+                if (slides[currentSlide].id === "homepageFrame") {
+
+                    autoScrollIframe(slides[currentSlide]);
+
+                } else {
+
+                    slides[currentSlide].src = slides[currentSlide].src;
+
+                }
+}
         
             slides[currentSlide].classList.add('active');
         
