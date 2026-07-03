@@ -204,29 +204,51 @@
                 const win = iframe.contentWindow;
                 const doc = iframe.contentDocument;
 
-                // ========= HIER GESCHWINDIGKEIT ÄNDERN =========
-                // 1 = sehr langsam
-                // 2 = normal
-                // 3 = schneller
-                const speed = 1.5;
-                // ===============================================
+                // ========= EINSTELLUNGEN =========
 
-                const maxScroll =
-                    doc.documentElement.scrollHeight - win.innerHeight;
+                // Oben warten (Millisekunden)
+                const pauseAtTop = 3000;
 
-                const duration =
-                    parseInt(iframe.dataset.duration) / speed;
+                // Gesamtdauer des Slides
+                const totalDuration = parseInt(iframe.dataset.duration);
+
+                // ================================
+
+                const scrollDuration = totalDuration - pauseAtTop;
 
                 const start = performance.now();
 
                 function animate(now) {
 
-                    const progress = Math.min((now - start) / duration, 1);
+                    const elapsed = now - start;
+
+                    // Während der Pause oben bleiben
+                    if (elapsed < pauseAtTop) {
+                        win.scrollTo(0, 0);
+                        requestAnimationFrame(animate);
+                        return;
+                    }
+
+                    // Fortschritt des Scrollens
+                    const progress = Math.min(
+                        (elapsed - pauseAtTop) / scrollDuration,
+                        1
+                    );
+
+                    // Seitenhöhe jedes Mal neu berechnen,
+                    // falls Bilder inzwischen geladen wurden
+                    const maxScroll = Math.max(
+                        0,
+                        doc.documentElement.scrollHeight - win.innerHeight
+                    );
 
                     win.scrollTo(0, maxScroll * progress);
 
                     if (progress < 1) {
                         requestAnimationFrame(animate);
+                    } else {
+                        // Am Ende sicher ganz unten landen
+                        win.scrollTo(0, maxScroll);
                     }
                 }
 
