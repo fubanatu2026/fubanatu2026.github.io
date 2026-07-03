@@ -224,7 +224,20 @@
         let isPaused = false;
         let pauseStart = 0;
         let pauseRemaining = 0;
+        let slideEndTime = 0;
+        let pauseOffset = 0;
         
+        function slideWatcher(now) {
+
+            if (!isPaused && slideEndTime && now >= slideEndTime) {
+                runDiashow();
+            }
+
+            requestAnimationFrame(slideWatcher);
+        }
+
+        requestAnimationFrame(slideWatcher);
+
         function stopAllTimers() {
 
             if (mainTimer) {
@@ -267,8 +280,8 @@
             function animate(now) {
         
                 const elapsed = isPaused
-                    ? pauseRemaining
-                    : now - slideStart;
+                    ? (slideDuration - pauseRemaining)
+                    : (now - slideStart);       
                 const remaining = Math.max(0, slideDuration - elapsed);
         
                 const percent = remaining / slideDuration;
@@ -302,7 +315,7 @@
                 }
             }
         
-            animationId = requestAnimationFrame(animate);
+            requestAnimationFrame(animate);
         }
         
         function autoScrollIframe(iframe) {
@@ -327,6 +340,11 @@
                 const start = performance.now();
 
                 function animate(now) {
+
+                    if (isPaused) {
+                        animationId = requestAnimationFrame(animate);
+                        return;
+}
 
                     const elapsed = now - start;
 
@@ -381,7 +399,6 @@
 
             stopAllTimers();
 
-            // aktuellen Slide verstecken
             slides[currentSlide].classList.remove('active');
 
             if (forceIndex !== null) {
@@ -392,7 +409,7 @@
 
             const slide = slides[currentSlide];
 
-            // Scroll nur beim GitHub-Frame
+            // GitHub Scroll
             if (slide.id === "homepageFrame") {
                 autoScrollIframe(slide);
             }
@@ -403,18 +420,14 @@
 
             startCountdown(duration);
 
-            // Preload 5 Sekunden vorher
-            preloadTimer = setTimeout(preloadNextSlide, Math.max(0, duration - 5000));
+            // 👉 WICHTIG: fester Endzeitpunkt statt setTimeout
+            slideEndTime = performance.now() + duration;
 
-            // EINZIGER stabiler Timer
-            mainTimer = setTimeout(() => {
-
-                if (!isPaused) {
-                    runDiashow();
-                }
-
-            }, duration);
-                    }
+            preloadTimer = setTimeout(
+                preloadNextSlide,
+                Math.max(0, parseInt(slide.dataset.duration, 10) - 5000)
+            );
+        }
 
         const firstDuration = parseInt(slides[currentSlide].dataset.duration, 10);
 
@@ -423,58 +436,33 @@
         // Bereits 5 Sekunden vor dem ersten Wechsel den nächsten Slide laden
         preloadTimer = setTimeout(preloadNextSlide, Math.max(0, firstDuration - 5000));
 
-        setTimeout(runDiashow, firstDuration);
+        slideStart = performance.now() - (slideDuration - pauseRemaining);
+        slideEndTime = performance.now() + pauseRemaining;
 
         updateClock();
         setInterval(updateClock,1000);
 
         document.addEventListener("keydown",function(e){
 
-            if(e.code === "Space") {
+            if (e.code === "Space") {
 
                 e.preventDefault();
 
-                // ================= PAUSE =================
                 if (!isPaused) {
 
                     isPaused = true;
 
-                    // Countdown einfrieren
-                    pauseRemaining =
-                        slideDuration - (performance.now() - slideStart);
+                    // Restzeit speichern
+                    pauseRemaining = slideEndTime - performance.now();
 
-                    // Animation stoppen
-                    if (animationId) {
-                        cancelAnimationFrame(animationId);
-                        animationId = null;
-                    }
-
-                    // Timer stoppen
-                    stopAllTimers();
-
-                }
-
-                // ================= RESUME =================
-                else {
+                } else {
 
                     isPaused = false;
 
-                    // neuen Countdown starten mit Restzeit
-                    slideStart = performance.now() - (slideDuration - pauseRemaining);
-
-                    startCountdown(pauseRemaining);
-
-                    // Restzeit bis Slidewechsel
-                    mainTimer = setTimeout(() => {
-
-                        if (!isPaused) {
-                            runDiashow();
-                        }
-
-                    }, pauseRemaining);
+                    // neue Endzeit korrekt rekonstruieren
+                    slideEndTime = performance.now() + pauseRemaining;
                 }
             }
-
             if(e.key === "ArrowRight") {
 
                 runDiashow();
