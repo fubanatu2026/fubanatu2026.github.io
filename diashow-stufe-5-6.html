@@ -221,6 +221,9 @@
         let preloadTimer = null;
         let mainTimer = null;
         let isManualChange = false;
+        let isPaused = false;
+        let pauseStart = 0;
+        let pauseRemaining = 0;
         
         function stopAllTimers() {
 
@@ -251,6 +254,8 @@
 
         function startCountdown(duration) {
 
+            if (isPaused) return;
+
             // Falls noch eine Animation läuft, beenden
             if (animationId !== null) {
                 cancelAnimationFrame(animationId);
@@ -261,7 +266,9 @@
         
             function animate(now) {
         
-                const elapsed = now - slideStart;
+                const elapsed = isPaused
+                    ? pauseRemaining
+                    : now - slideStart;
                 const remaining = Math.max(0, slideDuration - elapsed);
         
                 const percent = remaining / slideDuration;
@@ -401,9 +408,13 @@
 
             // EINZIGER stabiler Timer
             mainTimer = setTimeout(() => {
-                runDiashow();
+
+                if (!isPaused) {
+                    runDiashow();
+                }
+
             }, duration);
-        }
+                    }
 
         const firstDuration = parseInt(slides[currentSlide].dataset.duration, 10);
 
@@ -419,23 +430,49 @@
 
         document.addEventListener("keydown",function(e){
 
-            if(e.code==="Space"){
+            if(e.code === "Space") {
 
                 e.preventDefault();
 
-                if(animationId){
+                // ================= PAUSE =================
+                if (!isPaused) {
 
-                    cancelAnimationFrame(animationId);
-                    animationId=null;
+                    isPaused = true;
 
-                }else{
+                    // Countdown einfrieren
+                    pauseRemaining =
+                        slideDuration - (performance.now() - slideStart);
 
-                    startCountdown(
-                        parseInt(slides[currentSlide].dataset.duration)
-                    );
+                    // Animation stoppen
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+
+                    // Timer stoppen
+                    stopAllTimers();
 
                 }
 
+                // ================= RESUME =================
+                else {
+
+                    isPaused = false;
+
+                    // neuen Countdown starten mit Restzeit
+                    slideStart = performance.now() - (slideDuration - pauseRemaining);
+
+                    startCountdown(pauseRemaining);
+
+                    // Restzeit bis Slidewechsel
+                    mainTimer = setTimeout(() => {
+
+                        if (!isPaused) {
+                            runDiashow();
+                        }
+
+                    }, pauseRemaining);
+                }
             }
 
             if(e.key === "ArrowRight") {
