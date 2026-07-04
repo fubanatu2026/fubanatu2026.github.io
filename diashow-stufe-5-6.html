@@ -225,7 +225,6 @@
         let pauseStart = 0;
         let pauseRemaining = 0;
         let slideEndTime = 0;
-        let pauseOffset = 0;
         
         function slideWatcher(now) {
 
@@ -275,14 +274,18 @@
             }
         
             slideStart = performance.now();
-            pauseOffset = 0;
             slideDuration = duration;
         
-            function animate(now) {
-        
-                const elapsed = now - slideStart - pauseOffset;      
+           function animate(now) {
+
+                if (isPaused) {
+                    animationId = requestAnimationFrame(animate);
+                    return;
+                }
+
+                const elapsed = now - slideStart;
                 const remaining = Math.max(0, slideDuration - elapsed);
-        
+            
                 const percent = remaining / slideDuration;
         
                 progressBar.style.transform = `scaleX(${percent})`;
@@ -459,18 +462,14 @@
 
                     pauseStart = performance.now();
 
-                    pauseRemaining = slideEndTime - performance.now();
-
                 } else {
 
                     isPaused = false;
 
                     const pausedTime = performance.now() - pauseStart;
 
-                    pauseOffset += pausedTime;
-
+                    slideStart += pausedTime;
                     slideEndTime += pausedTime;
-                }
             }
             if(e.key === "ArrowRight") {
 
