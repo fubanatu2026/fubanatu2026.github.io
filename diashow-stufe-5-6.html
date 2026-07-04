@@ -275,13 +275,12 @@
             }
         
             slideStart = performance.now();
+            pauseOffset = 0;
             slideDuration = duration;
         
             function animate(now) {
         
-                const elapsed = isPaused
-                    ? (slideDuration - pauseRemaining)
-                    : (now - slideStart);       
+                const elapsed = now - slideStart - pauseOffset;      
                 const remaining = Math.max(0, slideDuration - elapsed);
         
                 const percent = remaining / slideDuration;
@@ -312,6 +311,9 @@
 
                 if (remaining > 0) {
                     animationId = requestAnimationFrame(animate);
+                }
+                else if (!isPaused) {
+                    runDiashow();
                 }
             }
         
@@ -433,11 +435,14 @@
 
         startCountdown(firstDuration);
 
+        slideStart = performance.now();
+        slideDuration = firstDuration;
+        slideEndTime = performance.now() + firstDuration;
+
         // Bereits 5 Sekunden vor dem ersten Wechsel den nächsten Slide laden
         preloadTimer = setTimeout(preloadNextSlide, Math.max(0, firstDuration - 5000));
 
-        slideStart = performance.now() - (slideDuration - pauseRemaining);
-        slideEndTime = performance.now() + pauseRemaining;
+        
 
         updateClock();
         setInterval(updateClock,1000);
@@ -452,15 +457,19 @@
 
                     isPaused = true;
 
-                    // Restzeit speichern
+                    pauseStart = performance.now();
+
                     pauseRemaining = slideEndTime - performance.now();
 
                 } else {
 
                     isPaused = false;
 
-                    // neue Endzeit korrekt rekonstruieren
-                    slideEndTime = performance.now() + pauseRemaining;
+                    const pausedTime = performance.now() - pauseStart;
+
+                    pauseOffset += pausedTime;
+
+                    slideEndTime += pausedTime;
                 }
             }
             if(e.key === "ArrowRight") {
