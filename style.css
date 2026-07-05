@@ -1116,3 +1116,47 @@ h2.subtitle {
     border-radius: 8px;
     background: #f0f0f0;
 }
+
+/* ===================================================== */
+/* PC-OPTIMIERUNG (Desktop-Layout ab 901px Breite)        */
+/* Am Handy bleibt alles wie gehabt (siehe Regeln oben)   */
+/* ===================================================== */
+@media (min-width: 901px) {
+
+    /* "Detaillierte Spielpläne & aktuelle Tabellen"-Hinweis
+       so breit wie die vier Turnier-Karten darunter */
+    .notice {
+        max-width: 1300px;
+    }
+
+    /* Bildergalerie: Bilder nebeneinander statt untereinander.
+       Die Spaltenanzahl richtet sich nach der Anzahl der
+       tatsächlich geladenen Bilder (data-image-count wird von
+       script.js gesetzt) – bei 0 Bildern bleibt das Feld
+       ohnehin über die bestehende Logik ausgeblendet. */
+    .image-block {
+        max-width: 1300px;
+    }
+
+    .image-gallery {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .image-gallery[data-image-count="1"] {
+        grid-template-columns: 1fr;
+        max-width: 320px;
+        margin: 0 auto;
+    }
+
+    .image-gallery[data-image-count="2"] {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .image-gallery[data-image-count="3"] {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .image-gallery[data-image-count="4"] {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
