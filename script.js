@@ -71,6 +71,7 @@ window.addEventListener('load', () => {
     initAdmin();
     initShare();
     initImageBlock();
+    initImageLightbox();
     showLiveLoadingState();
     renderCurrentFirebaseState();
     setLiveOffset();
@@ -222,6 +223,50 @@ function initImageBlock() {
             }
             finish();
         }
+    });
+
+    // Klick-Vergrößerung: nur am Handy und nur bei 3 oder 4 Bildern aktiv.
+    images.forEach(img => {
+        img.addEventListener("click", () => {
+            const count = parseInt(gallery.dataset.imageCount || "0", 10);
+            const isMobile = window.matchMedia("(max-width: 900px)").matches;
+            if (isMobile && (count === 3 || count === 4)) {
+                openImageLightbox(img.src, img.alt);
+            }
+        });
+    });
+}
+
+function openImageLightbox(src, alt) {
+    const overlay = document.getElementById("imageLightboxOverlay");
+    const box = document.getElementById("imageLightbox");
+    const img = document.getElementById("imageLightboxImg");
+    if (!overlay || !box || !img) return;
+
+    img.src = src;
+    img.alt = alt || "Vergrößertes Bild";
+    overlay.style.display = "block";
+    box.style.display = "block";
+}
+
+function closeImageLightbox() {
+    const overlay = document.getElementById("imageLightboxOverlay");
+    const box = document.getElementById("imageLightbox");
+    if (!overlay || !box) return;
+
+    overlay.style.display = "none";
+    box.style.display = "none";
+}
+
+function initImageLightbox() {
+    const overlay = document.getElementById("imageLightboxOverlay");
+    const closeBtn = document.getElementById("closeImageLightboxBtn");
+    if (!overlay || !closeBtn) return;
+
+    overlay.onclick = closeImageLightbox;
+    closeBtn.onclick = closeImageLightbox;
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeImageLightbox();
     });
 }
 

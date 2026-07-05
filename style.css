@@ -1119,7 +1119,6 @@ h2.subtitle {
 
 /* ===================================================== */
 /* PC-OPTIMIERUNG (Desktop-Layout ab 901px Breite)        */
-/* Am Handy bleibt alles wie gehabt (siehe Regeln oben)   */
 /* ===================================================== */
 @media (min-width: 901px) {
 
@@ -1130,33 +1129,118 @@ h2.subtitle {
     }
 
     /* Bildergalerie: Bilder nebeneinander statt untereinander.
-       Die Spaltenanzahl richtet sich nach der Anzahl der
-       tatsächlich geladenen Bilder (data-image-count wird von
-       script.js gesetzt) – bei 0 Bildern bleibt das Feld
-       ohnehin über die bestehende Logik ausgeblendet. */
+       Jede Spalte hat immer die gleiche feste Breite/Höhe –
+       unabhängig davon, wie viele Bilder tatsächlich geladen
+       wurden (data-image-count wird von script.js gesetzt).
+       Dadurch bleibt die Höhe der Galerie immer so, als wären
+       vier Bilder hochgeladen; bei weniger Bildern bleibt links
+       und rechts einfach Platz frei. Das Favicon wird am PC
+       nicht verwendet. */
     .image-block {
         max-width: 1300px;
     }
 
     .image-gallery {
-        grid-template-columns: repeat(4, 1fr);
+        --gallery-col: clamp(200px, 22vw, 300px);
+        display: grid;
+        justify-content: center;
+        gap: 16px;
     }
 
     .image-gallery[data-image-count="1"] {
-        grid-template-columns: 1fr;
-        max-width: 320px;
-        margin: 0 auto;
+        grid-template-columns: repeat(1, var(--gallery-col));
     }
 
     .image-gallery[data-image-count="2"] {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, var(--gallery-col));
     }
 
     .image-gallery[data-image-count="3"] {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, var(--gallery-col));
     }
 
     .image-gallery[data-image-count="4"] {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(4, var(--gallery-col));
     }
+}
+
+/* ===================================================== */
+/* HANDY-OPTIMIERUNG (bis 900px Breite)                   */
+/* Bei 1–2 Bildern: wie bisher groß/untereinander.        */
+/* Bei 3–4 Bildern: kompaktes 2x2-Raster mit Klick-Zoom.  */
+/* ===================================================== */
+@media (max-width: 900px) {
+
+    .image-gallery[data-image-count="3"],
+    .image-gallery[data-image-count="4"] {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+    }
+
+    .image-gallery[data-image-count="3"] img,
+    .image-gallery[data-image-count="4"] img {
+        border-radius: 6px;
+        border: 1px solid rgba(0,0,0,0.08);
+        cursor: pointer;
+    }
+
+    /* Sind nur 3 Bilder vorhanden, wird das Favicon als
+       viertes Feld ergänzt, damit das 2x2-Raster vollständig
+       aussieht (rein optisch, nicht anklickbar). */
+    .image-gallery[data-image-count="3"]::after {
+        content: "";
+        display: block;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 6px;
+        border: 1px solid rgba(0,0,0,0.08);
+        background: #f0f0f0 url("/favicon.png") center/55% no-repeat;
+    }
+}
+
+/* ===================================================== */
+/* BILD-LIGHTBOX (Klick-Vergrößerung bei 3/4 Bildern)     */
+/* ===================================================== */
+.image-lightbox-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    z-index: 9994;
+}
+
+.image-lightbox {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
+    z-index: 9995;
+}
+
+.image-lightbox img {
+    display: block;
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 10px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+}
+
+.image-lightbox-close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    color: #3414fc;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
