@@ -7,16 +7,16 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="/favicon.png">
 </head>
-
+ 
 <body>
-
+ 
 <div id="turnierCountdown" class="countdown-box">
     <span id="countdownText">Lädt...</span>
 </div>
-
+ 
 <div id="popupOverlay" class="popup-overlay"></div>
 <div id="adminOverlay" class="admin-overlay"></div>
-
+ 
 <div class="main-area">
     <h1 class="site-title">
         <span>FuBaNaTu 2026 <span id="adminBall" class="ball-icon">⚽</span></span>
@@ -31,12 +31,12 @@
         </button>
     </h1>
     <h2 class="subtitle">Dienstag 14. Juli 2026 – Mittwoch 15. Juli 2026</h2>
-
+ 
     <div id="adminPasswordBox" class="admin-box">
         <div class="admin-title">Nur für Admins</div>
         <input type="password" id="adminPassword" placeholder="Passwort eingeben">
     </div>
-
+ 
     <div id="adminPanel">
     <button class="admin-close" id="closeAdminPanelBtn" type="button">&times;</button>
     <h3>Admin-Konsole</h3>
@@ -45,7 +45,7 @@
         <p>Ergebnisse für Spiel <span id="adminCurrentNr">0</span>:</p>
         
         <div id="adminResultUnavailable" class="admin-result-unavailable" style="display: none;">Bei Pause oder ohne aktuelles Spiel kann kein Ergebnis eingetragen werden.</div>
-
+ 
         <div id="adminResultRowA" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 10px;">
             <span id="adminGameALabel">Platz 1</span>
             <input type="number" id="resA1" placeholder="0" inputmode="numeric" min="0" style="width: 40px;"> : 
@@ -57,6 +57,12 @@
             <input type="number" id="resB1" placeholder="0" inputmode="numeric" min="0" style="width: 40px;"> : 
             <input type="number" id="resB2" placeholder="0" inputmode="numeric" min="0" style="width: 40px;">
         </div>
+ 
+        <div id="adminResultRowC" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+            <span id="adminGameCLabel">Platz 3</span>
+            <input type="number" id="resC1" placeholder="0" inputmode="numeric" min="0" style="width: 40px;"> : 
+            <input type="number" id="resC2" placeholder="0" inputmode="numeric" min="0" style="width: 40px;">
+        </div>
         
         <div class="admin-actions">
             <button class="admin-button admin-button-success" id="saveResultsBtn">Speichern</button>
@@ -67,20 +73,20 @@
             <button class="admin-button admin-button-secondary" id="logoutAdminBtn">Abmelden</button>
         </div>
     </div>
-
+ 
     <div id="adminMessage" class="admin-message"></div>
-
+ 
     <h4>Spiel auswählen (ohne Speichern):</h4>
     <button class="admin-button admin-button-secondary" id="selectGameBtn">Spiel per Eingabe auswählen</button>
     <a class="admin-button admin-button-secondary" id="soundboardAdminBtn" href="soundboard.html" target="_blank" rel="noopener">Soundboard</a>
 </div>
-
+ 
     <div id="pastWrapper" class="games-wrapper">
         <div class="games-header">Vergangene Spiele</div>
         <button id="pastMoreBtn" class="show-more">Mehr anzeigen</button>
         <div id="pastGames"></div>
     </div>
-
+ 
     <div id="liveSpiel" class="live-box">
     <div class="live-content-wrapper">
         <div id="liveText">
@@ -88,13 +94,13 @@
             </div>
     </div>
 </div>
-
+ 
     <div id="futureWrapper" class="games-wrapper">
         <div class="games-header">Kommende Spiele</div>
         <div id="futureGames"></div>
         <button id="futureMoreBtn" class="show-more">Mehr anzeigen</button>
     </div>
-
+ 
     <div id="imageBlock" class="image-block" style="display: none;">
         <div class="games-header">aktuelle Impressionen</div>
         <div id="imageGallery" class="image-gallery" aria-label="Bildergalerie">
@@ -104,13 +110,13 @@
             <img src="bild4.jpg" alt="Bild 4">
         </div>
     </div>
-
+ 
     <div class="notice">
         <span class="notice-arrow">&dArr;</span>
         <span class="notice-text">Detaillierte Spielpläne & aktuelle Tabellen</span>
         <span class="notice-arrow">&dArr;</span>
     </div>
-
+ 
     <div class="grid tournament-grid">
         <div class="card tournament-card">
             <div class="card-header">Stufe 5 & 6</div>
@@ -141,7 +147,7 @@
             </div>
         </div>
     </div>
-
+ 
     <div class="visitor-box">
         <span class="visitor-text">
             <script charset="UTF-8" src="https://www.onlex.de/_counter.php?username=Gino1502"></script>
@@ -149,7 +155,7 @@
         </span>
     </div>
 </div>
-
+ 
 <div id="shareOverlay" class="share-overlay"></div>
 <div id="sharePopup" class="share-popup">
     <button class="share-close" id="closeShareBtn" type="button">&times;</button>
@@ -163,14 +169,14 @@
     </div>
     <div id="shareMessage" class="share-message"></div>
 </div>
-
+ 
 <footer class="footer">
     <p class="footer-title">Gymnasium der Stadt Würselen</p>
     <p>Kontakt: <a href="mailto:abi2027-gymwue@outlook.de">abi2027-gymwue@outlook.de</a></p>
     <p>Website: <a href="https://www.gymnasium-wuerselen.de" target="_blank">www.gymnasium-wuerselen.de</a></p>
     <p class="footer-copy"><span class="copy-symbol">&copy;</span> 2026 Gymnasium der Stadt Würselen – Gino Middendorf (FuBaNaTu Orga‑Team)</p>
 </footer>
-
+ 
 <div id="meinPopup" class="popup-fuba">
     <div class="popup-header">
         <span class="popup-title">WERBUNG</span>
@@ -187,8 +193,8 @@
             <div class="ad-slot" data-label="Anzeige 6"><img class="ad-image" src="anzeige-6.png" alt="Anzeige 6" onerror="this.style.display='none'"></div>
     </div>
 </div>
-
+ 
 <script type="module" src="script.js"></script>
-
+ 
 </body>
 </html>
