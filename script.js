@@ -71,6 +71,7 @@ window.addEventListener('load', () => {
     initAdmin();
     initShare();
     initImageBlock();
+    initImageLightbox();
     showLiveLoadingState();
     renderCurrentFirebaseState();
     setLiveOffset();
@@ -183,45 +184,111 @@ function initShare() {
     };
 }
  
-function initImageBlock() {
+// Endungen, die für die vier Impressionen-Bilder akzeptiert werden.
+// Es wird der Reihe nach geprüft, welche Datei tatsächlich existiert.
+const IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "gif"];
+
+// Lädt ein Bild "roh" (ohne Cache), berechnet einen Inhalts-Hash und
+// gibt eine URL mit "?v=hash" zurück, damit Browser-Caches beim
+// Hochladen eines neuen Bildes mit gleichem Namen zuverlässig umgangen
+// werden. Gibt null zurück, wenn unter keiner der Endungen ein Bild
+// gefunden wurde.
+async function resolveImageSource(base) {
+    for (const ext of IMAGE_EXTENSIONS) {
+        let res;
+        try {
+            res = await fetch(`${base}.${ext}`, { cache: "no-store" });
+        } catch (e) {
+            continue; // Datei existiert unter dieser Endung nicht / Netzwerkfehler
+        }
+        if (!res.ok) continue;
+
+        const blob = await res.blob();
+        let version;
+        try {
+            const buf = await blob.arrayBuffer();
+            const hashBuf = await crypto.subtle.digest("SHA-1", buf);
+            version = Array.from(new Uint8Array(hashBuf))
+                .map(b => b.toString(16).padStart(2, "0"))
+                .join("");
+        } catch (e) {
+            // Fallback, falls SubtleCrypto nicht verfügbar ist (z.B. unsicherer Kontext)
+            version = `${blob.size}-${Date.now()}`;
+        }
+        return `${base}.${ext}?v=${version}`;
+    }
+    return null;
+}
+
+async function initImageBlock() {
     const block = document.getElementById("imageBlock");
     const gallery = document.getElementById("imageGallery");
  
     if (!block || !gallery) return;
  
     const images = Array.from(gallery.querySelectorAll("img"));
-    let pending = images.length;
     let visibleCount = 0;
  
-    const finish = () => {
-        pending--;
-        if (pending > 0) return;
- 
-        block.style.display = visibleCount > 0 ? "block" : "none";
-        gallery.dataset.imageCount = String(visibleCount);
-    };
- 
-    images.forEach(img => {
-        img.addEventListener("load", () => {
+    await Promise.all(images.map(async img => {
+        const base = img.dataset.base;
+        if (!base) { img.remove(); return; }
+
+        const resolvedSrc = await resolveImageSource(base);
+        if (resolvedSrc) {
+            img.src = resolvedSrc;
             img.style.display = "block";
             visibleCount++;
-            finish();
-        }, { once: true });
- 
-        img.addEventListener("error", () => {
+        } else {
             img.remove();
-            finish();
-        }, { once: true });
- 
-        if (img.complete) {
-            if (img.naturalWidth > 0) {
-                img.style.display = "block";
-                visibleCount++;
-            } else {
-                img.remove();
-            }
-            finish();
         }
+    }));
+ 
+    block.style.display = visibleCount > 0 ? "block" : "none";
+    gallery.dataset.imageCount = String(visibleCount);
+ 
+    // Klick-Vergrößerung: nur am Handy und nur bei 3 oder 4 Bildern aktiv.
+    images.forEach(img => {
+        if (!img.isConnected) return; // wurde entfernt (kein Bild unter dieser Nummer gefunden)
+        img.addEventListener("click", () => {
+            const count = parseInt(gallery.dataset.imageCount || "0", 10);
+            const isMobile = window.matchMedia("(max-width: 900px)").matches;
+            if (isMobile && (count === 3 || count === 4)) {
+                openImageLightbox(img.src, img.alt);
+            }
+        });
+    });
+}
+
+function openImageLightbox(src, alt) {
+    const overlay = document.getElementById("imageLightboxOverlay");
+    const box = document.getElementById("imageLightbox");
+    const img = document.getElementById("imageLightboxImg");
+    if (!overlay || !box || !img) return;
+
+    img.src = src;
+    img.alt = alt || "Vergrößertes Bild";
+    overlay.style.display = "block";
+    box.style.display = "block";
+}
+
+function closeImageLightbox() {
+    const overlay = document.getElementById("imageLightboxOverlay");
+    const box = document.getElementById("imageLightbox");
+    if (!overlay || !box) return;
+
+    overlay.style.display = "none";
+    box.style.display = "none";
+}
+
+function initImageLightbox() {
+    const overlay = document.getElementById("imageLightboxOverlay");
+    const closeBtn = document.getElementById("closeImageLightboxBtn");
+    if (!overlay || !closeBtn) return;
+
+    overlay.onclick = closeImageLightbox;
+    closeBtn.onclick = closeImageLightbox;
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeImageLightbox();
     });
 }
  

@@ -100,17 +100,7 @@
         <div id="futureGames"></div>
         <button id="futureMoreBtn" class="show-more">Mehr anzeigen</button>
     </div>
- 
-    <div id="imageBlock" class="image-block" style="display: none;">
-        <div class="games-header">aktuelle Impressionen</div>
-        <div id="imageGallery" class="image-gallery" aria-label="Bildergalerie">
-            <img src="bild1.jpg" alt="Bild 1">
-            <img src="bild2.jpg" alt="Bild 2">
-            <img src="bild3.jpg" alt="Bild 3">
-            <img src="bild4.jpg" alt="Bild 4">
-        </div>
-    </div>
- 
+  
     <div class="notice">
         <span class="notice-arrow">&dArr;</span>
         <span class="notice-text">Detaillierte Spielpläne & aktuelle Tabellen</span>
@@ -147,6 +137,16 @@
             </div>
         </div>
     </div>
+
+    <div id="imageBlock" class="image-block" style="display: none;">
+        <div class="games-header">aktuelle Impressionen</div>
+        <div id="imageGallery" class="image-gallery" aria-label="Bildergalerie">
+            <img data-base="bild1" alt="Bild 1">
+            <img data-base="bild2" alt="Bild 2">
+            <img data-base="bild3" alt="Bild 3">
+            <img data-base="bild4" alt="Bild 4">
+        </div>
+    </div>
  
     <div class="visitor-box">
         <span class="visitor-text">
@@ -168,6 +168,12 @@
         <a href="https://wa.me/?text=https%3A%2F%2Ffubanatu2026.github.io" target="_blank">WhatsApp</a>
     </div>
     <div id="shareMessage" class="share-message"></div>
+</div>
+
+<div id="imageLightboxOverlay" class="image-lightbox-overlay"></div>
+<div id="imageLightbox" class="image-lightbox">
+    <button class="image-lightbox-close" id="closeImageLightboxBtn" type="button">&times;</button>
+    <img id="imageLightboxImg" src="" alt="Vergrößertes Bild">
 </div>
  
 <footer class="footer">
